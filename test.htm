@@ -1,0 +1,10 @@
+<html><head><title>jsthread</title><meta charset="utf-8">
+<!--<script type="text/javascript" src="Concurrent.Thread.Compiler+Http.js"></script>
+<script type="text/javascript" src="Concurrent.Thread.ScriptExecuter+Http.js"></script>
+--><script type="text/javascript" src="Concurrent.Thread-full-20090713.js"></script>
+</head><body><input type=text value=0 id=ip><script type = "text/javascript">
+function getRandomInt(max){return Math.floor(Math.random() * Math.floor(max))}
+function f1(){for(var i=0;;)++ip.value}
+function f2(){for(;;)console.log(getRandomInt(1000))}
+Concurrent.Thread.create(f1);Concurrent.Thread.create(f2)
+</script></body></html>

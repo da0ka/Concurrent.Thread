@@ -1,0 +1,207 @@
+<title>Tutorial</title>
+<link rel="stylesheet" type="text/css" href="kati.css">
+
+<body>
+	<div class="main">
+		<h1><a href="wiki.cgi?action=SEARCH&amp;word=A+Tutorial">A Tutorial</a></h1>
+		<div class="header">
+			<ul>
+				<li><a href="#p0">これは何?</a></li>
+				<li><a href="#p1">こんにちは，世界!</a></li>
+				<li><a href="#p2">はじめの一歩</a></li>
+				<li><a href="#p3">Threadを作る方法</a></li>
+				<li><a href="#p4">どうやってるの?</a></li>
+				<li><a href="#p5">scope ― 何が見えてますか?</a></li>
+				<li><a href="#p6">ちょっとした，最大の秘密</a></li>
+				<li><a href="#p7">もっと先へ</a></li>
+			</ul>
+			<hr>
+		</div>
+		<div class="day">
+			<div class="body">
+				<div class="section">
+					<h2><a name="p0">これは何?</a></h2>
+					<p>Concurrent.Thread は JavaScript の上に多重Thread環境を作り出す JavaScript 機能集合である．Threadなんかなくても，今ある機能で全部書けるって?そう，その通り! Concurrent.Thread は何も新しいことを可能にはしない．その代わりに，今まで「可能」であったことを少しだけ(あるいはとっても)「簡単」にしてくれる．</p>
+					<p>Threadなんかいらないよ，という凄腕hackerの君は残念，また別の機会にお会いしましょう．Threadがあったら，と少しでも思ったことのあるそこのアナタはおめでとう．――ようこそ，Concurrent.Thread の世界へ．</p>
+					<h2><a name="p1">こんにちは，世界!</a></h2>
+					<p>何はともあれ，まずは使ってみるとしよう．最初に書くprogramといえば，古来よりコレと決まっている．</p>
+					<pre>&lt;html&gt;&lt;body&gt;
+    &lt;script type="text/javascript" src="Concurrent.Thread.Compiler.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript"&gt;
+		  function hello(){
+			  document.body.innerHTML+="H";
+			  document.body.innerHTML+="e";
+			  document.body.innerHTML+="l";
+			  document.body.innerHTML+="l";
+			  document.body.innerHTML+="o";
+			  document.body.innerHTML+=",";
+			  document.body.innerHTML+=" ";
+			  document.body.innerHTML+="w";
+			  document.body.innerHTML+="o";
+			  document.body.innerHTML+="r";
+			  document.body.innerHTML+="l";
+			  document.body.innerHTML+="d";
+			  document.body.innerHTML+="!";
+		  }
+		  Concurrent.Thread.create(hello);
+	&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;</pre>
+					<p>ほらできた!簡単でしょ?</p>
+					<p>でも，ここでは何もおもしろいことは起こってはいない．それではこうしてみよう．</p>
+					<pre>&lt;html&gt;
+&lt;body&gt;
+    &lt;script type="text/javascript" src="Concurrent.Thread.Compiler.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript"&gt;
+		function hello(){
+			document.body.innerHTML+="H";Concurrent.Thread.yield();
+			document.body.innerHTML+="e";Concurrent.Thread.yield();
+			document.body.innerHTML+="l";Concurrent.Thread.yield();
+			document.body.innerHTML+="l";Concurrent.Thread.yield();
+			document.body.innerHTML+="o";Concurrent.Thread.yield();
+			document.body.innerHTML+=",";Concurrent.Thread.yield();
+			document.body.innerHTML+=" ";Concurrent.Thread.yield();
+			document.body.innerHTML+="w";Concurrent.Thread.yield();
+			document.body.innerHTML+="o";Concurrent.Thread.yield();
+			document.body.innerHTML+="r";Concurrent.Thread.yield();
+			document.body.innerHTML+="l";Concurrent.Thread.yield();
+			document.body.innerHTML+="d";Concurrent.Thread.yield();
+			document.body.innerHTML+="!";Concurrent.Thread.yield();
+		}
+		Concurrent.Thread.create(hello);
+		Concurrent.Thread.create(hello);
+	&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+					<p>今度は少しばかり興味深い結果になったのではないかな? 同じ文字が2つずつ重なって表示されているはずだ．(もしそうなっていなければ，あなたのbrowserには対応していないということだ．申し訳ない．互換性についての項を確認してほしい．)だが，我々はどこにも「"H"を 2個続けて打て」などということは書いていない．これはつまり，関数 hello を同時に 2 つ実行しているのだ．これがたぶん，あなたが欲しかったものでしょう?(そうじゃなかったらゴメンなさい)</p>
+					<h2><a name="p2">はじめの一歩</a></h2>
+					<p>さきほどのprogramについて解説していこう．</p>
+					<p>最初に述べたとおり Concurrent.Thread は機能集合である．そのため，使用するためにはまずそれを読み込まなければならない．上の例では 3 行目がそうである．</p>
+					<pre>&lt;script type="text/javascript" src="Concurrent.Thread.Compiler.js"&gt;&lt;/script&gt;
+</pre>
+					<p>もちろん，file名はあなたがfileを保存したときの名前にするように．これで使う準備は完了である．</p>
+					<p>あとは普通に JavaScript を書けばよい．ただし，多重Threadが使いたければ機能集合が提供する API を用いなければならない．次の行のようにだ．</p>
+					<pre>Concurrent.Thread.create(hello);
+</pre>
+					<p>こうすると，関数 hello が新しく作られた別のThreadの上で実行される．複数を同時に実行したければ，create methodをたくさん並べればいい．</p>
+					<pre>Concurrent.Thread.create(hello);
+Concurrent.Thread.create(hello);
+Concurrent.Thread.create(hello);
+.
+.
+.
+</pre>
+					<p>これで今日からあなたもThread programerだ．</p>
+					<p>2つめの例で使われている yield methodは，多くの Java programerの予想通り(そしてほとんどすべての Ruby programerの期待を裏切って)，現在実行中のThreadの実行権限を明示的に明け渡すものである．</p>
+					<p>あえて云う必要もないかもしれないが，複数の JavaScript codeが並行に実行されているといっても，実際にある瞬間に実行できるcodeはひとつだけである．Threadはひとつしかない実行権を高速に渡しあうことで，人間からは同時に動いているように見せかけているのである．Threadは一定の短い時間のあいだ実行権を保持し，他の仕事に邪魔されることなく実行を続ける．この短い時間のことをtime sliceと呼ぶ．上で述べた yield は，time sliceを使い切る前に明示的に実行権を次に譲るためのものである．</p>
+					<p>yield を使う典型的な場面は，次のように世界がある状態になるまで待つ必要があるときだ．</p>
+					<pre>while(!allsRightWithTheWorld()) Concurrent.Thread.yield();
+</pre>
+					<p>yield を使わずに，ただ，</p>
+					<pre>while(!allsRightWithTheWorld()) ;
+</pre>
+					<p>と書いたときの違いは，CPU を無駄遣いしないということである．後者はtime sliceを使い切るまで何度も目的の状態になったかを確認するが，これは概ね無駄な仕事である．何故なら，このThreadがtime sliceを使い切るまで他のThreadは仕事をすることができないので，他の誰かが世界の状態を変えることはできないからだ．</p>
+					<p>これを用いた役に立つ慣わしのひとつに，browserが body 要素を生成するまで処理を遅延するというものがある．</p>
+					<pre>Concurrent.Thread.create(function(){
+    while(!document.body) Concurrent.Thread.yield();
+    initialize();
+});
+</pre>
+					<p>こうすると，HTML の body要素を必要とするような初期化処理を，body 要素が使えるようになるその時まで遅らせることができる．特筆すべきなのは，body 要素が使えるようになるのは，一般的には，onload event handlerが呼ばれるよりもずっと早い段階だということだ．だからapplicationによっては，onload を用いるよりも早い段階で利用者が機能を使えるようにできる．この方法は，while の条件式を変えれば他にももっと応用できるはずだ．</p>
+					<p>一定時間の経過を待つためには yield よりも sleep methodのほうが向いている．sleep を呼び出したThreadは即座に一定時間の休眠状態に入る．これは目覚まし時計を設定して寝るのと似ている．休眠時間はmili秒単位で指定する: </p>
+					<pre>Concurrent.Thread.sleep(10000);
+</pre>
+					<p>この例では，10秒後に目覚ましが鳴るというわけだ．そして実のところ，yield は次と同じ意味だったりする．</p>
+					<pre>Concurrent.Thread.sleep(0);
+</pre>
+					<p>これは眠りに入った直後に目覚ましが鳴るということだ．要するに yield とは，一瞬だけうたた寝するぞ，といっているようなものだ．そして一瞬の隙をついて，他のThreadはその実行権を奪うことができる．</p>
+					<p>眠っているThreadを，目覚ましがなる前にたたき起こしたくなる時があるだろう，そんなときには notify methodが役に立つ．notify methodは他のThreadの上に例外を発生させるmethodで，対象のThreadが眠っていた場合は即座にその実行が再開される．</p>
+					<pre>th.notify("morning!");
+</pre>
+					<p>ここでの変数 th にはThread Objectが入っていると考えて欲しい．Thread Objectについては次節で説明するが，create methodの戻り値であるとだけ言っておこう．</p>
+					<p>時には他の誰かが起こしてくれるまでずっと眠っていたくなるときもあるだろう．そんなときは，sleep の代わりに stop methodを用いればよい．stop は sleep と同じように，呼び出した瞬間に眠りに入るのだが，こちらは目覚ましを設定せずに寝る．そして自分から起きるようなことはない(なんて自堕落な野郎だ)!だから，stop を使うときの基本的な形は次の通りである．</p>
+					<pre>try {
+    Concurrent.Thread.stop();
+} catch(e){
+    // ここから実行が再開される
+}
+</pre>
+					<p>あとは誰かが起こしてくれるのをじっと待つだけである．そのまま誰にも起こされなかったらどうなるかって? そのときはそのままゆるやかに死に向かうだけだ．(memory leakの心配をしているあなたに朗報をお届けしよう．stop したまま忘れ去られたThreadが参照しているmemoryは，処理系のごみ回収者によって適宜回収されるはずだ．だから安心してほしい)</p>
+					<h2><a name="p3">Threadを作る方法</a></h2>
+					<p>Threadを作る方法は 2 つある．1 つは最初の例でも使われていた create methodに関数を渡すことだ．create methodは新しいThreadを作成し，その上で渡された関数の実行を開始する．関数に引数を渡したければ，実行したい関数に続けて書けばよい:</p>
+					<pre>Concurrent.Thread.create(function fib(n){
+    return n &lt; 2 ? 1
+                 : fib(n-1)+fib(n-2);
+},100);
+</pre>
+					<p>もう1つの方法は，関数 Objectに追加されている async methodを用いることだ:</p>
+					<pre>f.async(this_val,args)
+</pre>
+					<p>ただし，この場合の f は，compile methodの戻り値として得られた関数でなければならない．compile methodについては，次節で説明する．</p>
+					<p>async methodの優れた点は，呼び出した先での this 値を指定できることである．その意味でこれは，JavaScript 組み込みの apply methodと似ている．そのため，渡すべき引数も同じく，this 値と引数をまとめた配列なのである．</p>
+					<p>create も async も，その戻り値としてThread Objectを返す．Thread Objectを用いることで，新しく作られたThreadに対して操作をすることができる．たとえば，上であげた notify methodはその例である．Thread Objectの methodして他には，join がある．これは対象Threadの実行が終了するまで待つというものである．たとえば次の例，</p>
+					<pre>var th1 = Concurrent.Thread.create(f);
+var th2 = Concurrent.Thread.create(g);
+var rv1 = th1.join();
+var rv2 = th2.join();
+</pre>
+					<p>これは f と g 2つの関数を並行に実行し，両方の実行が終了するのを待つというものだ．join の戻り値は実行した関数の戻り値で，この場合は変数 rv1，rv2 にそれぞれ関数f，g の結果が得られるというわけだ．</p>
+					<p>join によって待機状態にあるときも，sleep や stop と同様に，他のThreadから notifyを呼ばれることで即座に実行を再開することができる．もちろんその時には，例外が補足された catch 節から実行が再開される．</p>
+					<h2><a name="p4">どうやってるの?</a></h2>
+					<p>ここでは Concurrent.Thread が，どうやって多重Threadを実現しているかについてお話したいと思う．すでに興味津々の人もいらっしゃるだろう(と願いたい)一方で，内部事情に興味はないという人もいらっしゃるだろう．しかし，興味のない人も 1 つだけ覚えておいて欲しい．それは，Concurrent.Thread がcode変換を利用しているということだ．つまり，あなたが別Threadで実行しようとして create methodに渡した関数と，実際に実行される関数は全くの別物なのだ．ただ，その「別物関数」は(概ね)あなたの期待通りに動いてくれるはずだ．これさえ心に留めておいてくれれば，この節の残りの部分は読み飛ばしてもらって構わない．</p>
+					<p>内部事情に興味を持ってくれた人たちのために，もう少しだけ説明させてもらおう．Concurrent.Thread は create methodに渡された関数を，UI Threadをこまめに解放するようなprogramへと書き換えたものをつくり，それを実行する．書き換えの大まかな想像としては，programを「細切れ」にしてその「切れ目」に中断と再開のためのcodeを挟み込む感じだ．JavaScript は関数の toString methodを用いることで，実行時に関数の算譜を得ることができるので，これを用いてprogramを変換し，変換結果のprogram(算譜)を eval で評価してやることで，まんまと実行時にcode変換ができてしまうというわけである．詳しいことは導入部の範囲を逸脱するため割愛させてもらうが，より詳しく知りたい人は，本導入部の末尾から参照されている文書を参照されたい．</p>
+					<p>変換と一言でいっても，programを構文解析し，構文木を操作した上で，また JavaScriptを組みなおすというようなことを行うわけで，これは決して軽い処理ではない．こんなことを create methodを呼ぶたびに行っていては，いくら CPU があっても足りない．そのため，まさにこの変換だけを行うために compile methodが用意されている．compile はcode変換を行い，その結果として関数を返す．変換結果の関数には前節で紹介した async methodを呼び出すことができ，これによって新しいThreadを作ることができる．また，変換結果をこれまで通り create methodに渡すことでも同じことができる．もちろん，この場合にも再度変換が行われることはない．従って，次のような create methodの呼び出しは，</p>
+					<pre>Concurrent.Thread.create(f,a1,a2,...)
+</pre>
+					<p>下の compile と async を使ったcodeの省略形である．</p>
+					<pre>Concurrent.Thread.compile(f).async(null,[a1,a2,...])
+</pre>
+					<h2><a name="p5">scope ― 何が見えてますか?</a></h2>
+					<p>前節で，create methodに渡した関数と実際に実行される関数は全くの別物だと書いたが，これが大いに問題になる場合がある．Concurrent.Thread は本来の関数の意味をなるべく変えないよう注意深くcode変換を行うが，自由変数だけはどうにもならないのだ．次の例を見てみよう．</p>
+					<pre>function f(x,y){
+	Concurrent.Thread.create(function(){
+	    document.write(x+y)
+	})
+}</pre>
+					<p>これを f(1,2) と呼び出すと，3 が表示されてほしいと思うだろうが，実際にはそうはならない．これには変換された関数が評価される場所が関係している．compile methodは変換結果の関数を最上位に近い所で eval の評価にかける．だから，変換前に自由変数であったものは変換後の関数では概ね大域変数を指すことになってしまう．つまり，上の例はだいたい次のcodeと同じである．</p>
+					<pre>function g(){
+    document.write(x+y)
+}
+function f(x,y){
+    Concurrent.Thread.create(g)
+}
+</pre>
+					<p>これではあまりにも不便なので，もちろん逃げ道を用意してある．それは prepare methodを利用することである．</p>
+					<p>prepare methodは引数に渡された関数のcode変換を行い，その結果のprogramの算譜(文字列)を返す．ということはつまり，compile methodは次のcodeの省略形なのである．</p>
+					<pre>eval(Concurrent.Thread.prepare(f))
+</pre>
+					<p>しかし自分で直接 eval を呼んだ場合には，変換後の関数の中でもそこでのlocal変数に接触できるという点が大きく異なる．よってさきほどの例は，次のように修正することで意図した通りに動くようになる．</p>
+					<pre>function f(x,y){
+    eval(Concurrent.Thread.prepare(function(){
+        document.write(x+y)
+    })).async()
+}
+</pre>
+					<p>ちょいと見た目は悪いが，そこはどうかご容赦願いたい．</p>
+					<h2><a name="p6">ちょっとした，最大の秘密</a></h2>
+					<p>ここで1つ，皆さんに告白しておかなければならないことがある．私はここまでで，compile methodはcode変換を行いその結果の関数を返す，とさんざん書いてきた．そのこと自体は，あながち誤りではない．ではその結果をご覧頂くべく，返された関数を文字列化してみようじゃありませんか．</p>
+					<pre>document.write(Concurrent.Thread.compile(function(){
+    document.write("Hello,world")
+}));
+</pre>
+					<p>・・・・・・はい，何も変わっていない元のままの関数が表示されましたね?何も変わってないんじゃ話が違う?変換結果はどこへやったって?落ち着いて，落ち着いて．答えは次のcodeを実行してみればわかります．</p>
+					<pre>var f = Concurrent.Thread.compile(function(){
+    document.write("Hello,world")
+});
+document.write(f.$Concurrent_Thread_compiled)
+</pre>
+					<p>もうおわかりですよね?変換結果は「$Concurrent_Thread_compiled」という一種の隠しpropertyにひっそりと押し込められているのです．戻り値の関数が元のままになっているのは，こうしておくことでcode変換されていない関数でも普通に呼び出させるようにしておくためだ．もちろん，こうして呼び出された場合には他のThreadと並行に動作することはできない．</p>
+					<p>実のところ，Concurrent.Thread が知っているのは，関数に付けられたこの隠しpropertyの使い方だけなのだ．code変換された関数は，他の関数を呼ぶときにこのpropertyを使って呼ぶように変換されるし，async methodもこれを使っている．さて，この秘密を知ってしまったからには，あなたはもう相当 Concurrent.Thread の「事情通」になっているはずだ．是非ともその「事情通っぷり」を自慢しがてら，他の人にも広めて頂きたい．</p>
+					<h2><a name="p7">もっと先へ</a></h2>
+					<p>この導入部はここまでだが，より詳しく知りたいという人のために，わずかだが他の文書を紹介しておこう．</p>
+					<p>まずは Concurrent.Thread の <a href="api.htm" class="wikipage">API 仕様</a>．これには，ここでは述べられなかったことが少しだけ載っている．とても短い文書で，冗長である分を除いても，たぶんこの導入部のほうが情報量が多いと思う．しかし Concurrent.Thread のすべての機能を把握するためには必読の書である．</p>
+					<p>もう1つは <a href="thesis-jp.pdf">論文『非同期処理のための JavaScript 多重thread framework』</a>(3910)．こちらでは Concurrent.Thread の実現手法について詳細に述べられている．内容的にはいくらか古くなっている部分もあるが，基本的な部分はここに書かれていることから変わってはいない．こちらは実装方法に興味のある人や，code変換器を使わずに自分で手動書き換えしてみたいという酔狂な人などにオススメである．</p>
+				</div>
+			</div>
+		</div>
+	</div>

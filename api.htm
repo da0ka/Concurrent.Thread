@@ -1,0 +1,181 @@
+<title>API</title>
+<link rel="stylesheet" type="text/css" href="kati.css">
+
+<body>
+	<div class="main">
+		<h1><a href="wiki.cgi?action=SEARCH&amp;word=API%5FSpecification">API_Specification</a></h1>
+		<div class="header">
+			<ul>
+				<li><a href="#p0">Goal</a></li>
+				<li><a href="#p1">名前空間</a></li>
+				<li><a href="#p2">Concurrent.Thread Object</a>
+					<ul>
+						<li><a href="#p3">継承</a></li>
+						<li><a href="#p4">static method</a>
+							<ul>
+								<li><a href="#p5">prepare(func)</a></li>
+								<li><a href="#p6">compile(func)</a></li>
+								<li><a href="#p7">create(func, arg1, arg2, ...)</a></li>
+								<li><a href="#p8">self()</a></li>
+								<li><a href="#p9">sleep(t)</a></li>
+								<li><a href="#p10">stop()</a></li>
+								<li><a href="#p11">yield()</a></li>
+							</ul>
+						</li>
+						<li><a href="#p12">instance method</a>
+							<ul>
+								<li><a href="#p13">th.join()</a></li>
+								<li><a href="#p14">th.kill(s)</a></li>
+								<li><a href="#p15">th.notify(e)</a></li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+				<li><a href="#p16">Concurrent.Thread.KillException Object</a>
+					<ul>
+						<li><a href="#p17">継承</a></li>
+						<li><a href="#p18">instance property</a>
+							<ul>
+								<li><a href="#p19">thread</a></li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+				<li><a href="#p20">Function Objectへの拡張</a>
+					<ul>
+						<li><a href="#p21">instance method</a>
+							<ul>
+								<li><a href="#p22">f.async(this_val, args)</a></li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+				<li><a href="#p23">例外の伝播</a></li>
+			</ul>
+			<hr>
+		</div>
+		<div class="day">
+			<div class="body">
+				<div class="section">
+					<h2><a name="p0">Goal</a></h2>
+					<p>次のような記述を可能とすることを目指す．</p>
+					<pre>// 時間がかかりそうな計算をしている間，利用者に凍結して
+// いないことを示すために，棒をくるくる回すような例
+
+//計算中の表示を行うThread
+var ui_t = Concurrent.Thread.create(function(){
+	for(var i = 0,t=['|', '/', '-', '\'];;)
+		document.body.innerHTML = "Now calculating..."+t[i++&3],
+		Concurrent.Thread.sleep(1000);
+});
+
+//時間がかかりそうな計算をする(別Thread化された)関数
+var fibonacci = Concurrent.Thread.compile(function(i){
+	function fib(n){
+		return n&lt;2?1:fib(n-2)+fib(n-1)
+	}
+	for(var arr=[];i;)arr[--i]=fib(i);
+	return arr
+});
+
+//主Thread
+var main_t = Concurrent.Thread.create(function(){
+	var calc_t = fibonacci.async(null, [1000]);  //計算Threadを引数1000で開始
+	var result = calc_t.join();                  //計算が終わるのを待つ
+	ui_t.kill();                                 //棒を回していたThreadを停止
+	document.body.innerHTML = "Now calculating...finised.&lt;br&gt;\n";
+	for (var i=0,l=result.length;i&lt;l;)
+		document.body.innerHTML += i + ": " + result[i++] + "&lt;br&gt;"
+})
+</pre>
+					<p>主な目標は次の3点である．</p>
+					<ul>
+						<li>Object指向なThread libraryを提供する</li>
+						<li>多重Thread化されたcodeの外側で定義された関数(JavaScriptの組み込み関数を含む)も利用可能にする</li>
+						<li>JavaScriptの通常のscope解決にしたがって，多重Thread化されたcodeの外側の変数への接触を可能にする．</li>
+					</ul>
+					<h2><a name="p1">名前空間</a></h2>
+					<p>本libraryは最上位Objectに「Concurrent」という名前の名前空間を作成し，その中に唯一「Thread」という名前でconstructorを定義する．本libraryで定義するその他の名前は，すべてこの「Concurrent.Therad」の下に定義される．</p>
+					<h2><a name="p2">Concurrent.Thread Object</a></h2>
+					<p>virtual-threadを表すObject．Threadを生成するためのstatic methodと，生成されたThreadを操作するためのmethodを持つ．</p>
+					<h3><a name="p3">継承</a></h3>
+					<ul>
+						<li>→ Object</li>
+					</ul>
+					<h3><a name="p4">static method</a></h3>
+					<h4><a name="p5">prepare(<em>func</em>)</a></h4>
+					<p>関数 <em>func</em> をcode変換した結果の JavaScript codeを文字列として返す．</p>
+					<h4><a name="p6">compile(<em>func</em>)</a></h4>
+					<p>関数<em>func</em>を virtual-thread で実行できるようにcode変換する．変換した結果の関数を返す．これは次の式とおおむね等しい．</p>
+					<pre>eval(Concurrent.Thread.prepare(func))
+</pre>
+					<h4><a name="p7">create(<em>func</em>, <em>arg1</em>, <em>arg2</em>, ...)</a></h4>
+					<p>新しい virtual-thread を作成して，そのThreadで関数<em>func</em>を実行する．<em>arg1</em>, <em>arg2</em>, ... は <em>func</em> に引数として渡される．これは次の式と等価である．</p>
+					<pre>Concurrent.Thread.compile(func).async(null, [arg1, arg2, ...])
+</pre>
+					<p>作成された Concurrent.Thread Objectを返す．</p>
+					<h4><a name="p8">self()</a></h4>
+					<p>現在実行中の Concurrent.Thread Object(つまり自分自身)を取得する．virtual-threadではなく，native-thread(通常のscript)が実行されている場合はnullを返す．</p>
+					<h4><a name="p9">sleep(<em>t</em>)</a></h4>
+					<p>現在実行中の virtual-thread を<em>t</em> mili秒間待機させる．後述の notify methodを使えば待機を中断できる．</p>
+					<h4><a name="p10">stop()</a></h4>
+					<p>現在実行中のvirtual-threadを停止状態にする．停止状態に入ったThreadは後述の notify methodで起こされるまで止まり続ける．基本的に次のような使用法を想定している．</p>
+					<pre>try {
+	Concurrent.Thread.stop();
+}
+catch (e) {
+	if (e instanceOf Concurrent.Thread.KillException) {
+		throw e;
+	}
+	else if (e instanceof SomeOtherException) {
+		do_something();
+	}
+	.
+	.
+	.
+}
+</pre>
+					<h4><a name="p11">yield()</a></h4>
+					<p>他のThreadにCPUを明け渡す．次の式と等価．</p>
+					<pre>Concurrent.Thread.sleep(0)
+</pre>
+					<h3><a name="p12">instance method</a></h3>
+					<h4><a name="p13"><em>th</em>.join()</a></h4>
+					<p>Thread<em>th</em>の実行が終了するまで，現在の virtual-thread を待機させる．<em>th</em>が実行した関数の戻り値を返す．下記の notify で取り消しできる．後述の「例外の伝播」も参照．</p>
+					<p>戻り値としてThread<em>th</em>の上で実行された関数の戻り値を返す．</p>
+					<h4><a name="p14"><em>th</em>.kill(<em>s</em>)</a></h4>
+					<p>次の式と等価．</p>
+					<pre>th.notify(new Concurrent.Thread.KillException(s))
+</pre>
+					<h4><a name="p15"><em>th</em>.notify(<em>e</em>)</a></h4>
+					<p>Thread<em>th</em>の上で例外<em>e</em>を発生させる．<em>th</em>が sleep，stop，あるいは join で待機状態にあった場合は，待機が解除される．</p>
+					<h2><a name="p16">Concurrent.Thread.KillException Object</a></h2>
+					<p>Threadが外部から強制終了されたことを示す例外．通常の例外と同じように catch することで取り消し可．</p>
+					<h3><a name="p17">継承</a></h3>
+					<ul>
+						<li>→ Data.Error.Exception</li>
+						<li>→ Error</li>
+						<li>→ Object</li>
+					</ul>
+					<h3><a name="p18">instance property</a></h3>
+					<h4><a name="p19">thread</a></h4>
+					<p>例外の発生元である Concurrent.Thread Objectへの参照を保持する．</p>
+					<h2><a name="p20">Function Objectへの拡張</a></h2>
+					<h3><a name="p21">instance method</a></h3>
+					<h4><a name="p22"><em>f</em>.async(<em>this_val</em>, <em>args</em>)</a></h4>
+					<p>新しくThreadを作成し，その上で関数<em>f</em>を呼び出す．その際，呼び出し先の this 値として<em>this_val</em>を，引数列として配列<em>args</em>を用いる．</p>
+					<p>戻り値として，新しく作成されたConcurrent.Thread Objectを返す．</p>
+					<h2><a name="p23">例外の伝播</a></h2>
+					<p>ある virtual-thread 上で catch されない例外が throw された場合，そのThreadのすべての実行は終了される．</p>
+					<p>そのThreadの join methodを呼び出していたすべてのThreadは(目的のThreadの実行が終了するため)実行を再開するが，通常のように join の呼び出しから返るのではなく，join 先のThreadで発生したものと同じ例外が throw (notify)されることで再開される．</p>
+					<p>このとき，この例外がまた catch されないと，同じくそれらのThreadを join していたThreadへと例外が伝播していく．</p>
+					<p>最終的に join しているThreadが無くなってもまだ catch されない例外が残っていた場合は，Thread libraryはその例外を処理することをあきらめて，native-thread (JavaScript機関を動かしている UI-thread)でその例外を throw する(ただし，Concurrent.Thread.KillException だけは native-thread に throw されずに無視される)．この場合，その例外がどのように処理されるかは処理系に依存する．</p>
+				</div>
+			</div>
+		</div>
+		<div class="footer"> Copyright (C) 2006-2007 <a href="mailto:daisuke-maki@users.sourceforge.net"> Daisuke Maki </a>
+			<div style="text-align:right">
+				<a href="http://sourceforge.net/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=191184&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo"></a>
+			</div>
+		</div>
+	</div>
