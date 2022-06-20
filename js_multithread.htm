@@ -1,0 +1,285 @@
+<title>js multithread</title><style>body,pre{font-family:"MS Gothic"}pre{border:1px solid #acf;background:#eef}</style>
+<h2>JavaScriptにおけるthread</h2>
+<p>Concurrent.Threadの内部についてお話しする前に、JavaScript のthreadについておさらいしておきます。
+<p>まず、JavaScriptにはthreadは1本しかありません。JavaScriptのCodeは呼び出されるたびに、この1本だけのthreadを独占的に使用して実行されます。「独占的」が意味する所は、threadがあるCodeによって使われている間は他のCodeは割り込んだりすることはできないということです。そのため、JavaScript codeを実行しようとした時に他のCodeがthreadを使っていたら、前の実行が終了するまでじっと待っていなくてはなりません。
+<p>一方、実行中のJavaScript codeは、自分の仕事を全て終えるまでthreadを解放することはできません。通常、JavaScriptはHTMLの中からEvent handlerとして呼び出されますから、Event handlerから完全にreturnするまではthreadを他の仕事のために使うことはできないわけです。従ってJavaScriptにおいては、Programの途中で現在の仕事を中断して、他の仕事にthreadの実行権を譲るといったことは簡単にはできません。
+<h2>並行処理を実現する素朴な方法</h2>
+<p>こうしたJavaScript環境の上で並行処理を実現するには、古くからsetTimeoutが用いられてきました。次の例で考えてみましょう。
+<pre>function f(){
+	do_something();
+	do_another();
+	do_one_more();
+}</pre>
+<p>このProgramでは順番に3つの関数を呼び出していますが、各関数呼び出しの間でいったんthreadの実行権を他のJavaScript codeに渡したいとします。これは次のように、各関数呼び出しをそれぞれ別の関数に分けて、間にsetTimeoutを挿むようにProgramを書き換えることで実現できます。
+<pre>function f(){
+	do_something();
+	setTimeout(f1,1);//1mili秒後にf1を呼び出す
+}
+function f1(){
+	do_another();
+	setTimeout(f2,1);
+}
+function f2(){
+	do_one_more();
+}</pre>
+<p>こうして書き換えた関数fを f();f(); のようにして2回連続して呼び出した場合の実行の様子を考えてみましょう。
+<p>まず1回目のfが呼ばれて、その中でdo_somethingが呼び出されます。do_somethingの実行が終わると、fはsetTimeoutを使って関数f1を後で実行するように予約してから、呼び出しから返ります。すると今度は2つめのfが呼び出されて、同じようにdo_somethingを実行してからsetTimeoutして、呼び出しから返ります。
+<p>2つのfの呼び出しが終わると、このJavaScript codeは仕事を完了してthreadを解放します。これでthreadに新しい仕事を割り当てることができるようになりました。するとどうでしょう、先ほどsetTimeoutで予約しておいた関数f1の時間がすぐにやって来て、threadの上で実行されます。f1はdo_anotherを実行して、今度はsetTimeoutでf2を後で呼び出すように予約してthreadを解放します。最初に関数fを2回呼び出してf1の実行予約も2回されたため、もう1つのf1の時間もすぐにやってきて、もう一度同じように実行されます。2回のf1の実行が終わるとすぐに、今度はf2の時間がやってきます。f2も2回実行が予約されているので、do_one_moreを2回実行することになります。この実行の様子を図に表すと下のようになります。
+<p><img src="fig1.png">
+<p>こうして見るとどうでしょう? 元々の書き換え前の関数fが、2つ並行に実行されているように見えませんか? 
+<p>上のProgramの書き換えの要は、次の仕事をsetTimeoutで予約してすぐにProgramを終了するような形にすることです。setTimeoutしたらすぐにthreadを解放することで、他の仕事に使えるようにしているわけです。
+<p>このような書き換えをしてやればJavaScriptでも並行処理を実現できるわけですが、いちいちこんな書き換えをしなければならないというのは面倒ですね。自分の代わりに誰かがやってくれたら、と思うのが人情というものです。
+<h2>Concurrent.Threadがやってくれること</h2>
+<p>実の所、Concurrent.ThreadがしてくれるのはまさしくこのようなProgramの書き換えなのです。Concurrent.Threadがやっていることはこれが全てだと言っても過言ではありません(実際にはもう少しだけ仕事をしているのですが)。Concurrent.Threadはあなたの代わりに、Programを分割してsetTimeoutを挿み込むという書き換えを、自動的におこなってくれているのです。
+<p>しかし、上の例はとても簡単なProgramを書き換えただけでした。もっと複雑なProgramでも自動的に書き換えるなんてことができるのでしょうか? これから少しずつ考えていきましょう。
+<h2>入れ子になったProgramを書き換える</h2>
+<p>まずは次のような単純なloop文を書き換えてみましょう。
+<pre>function g(){
+	while(i&lt;n){
+		do_something(i);
+		do_another(i);
+		i++;
+	}
+}</pre>
+<p>目標はさっきと同じです。do_somethingとdo_anotherのそれぞれの呼び出しの間で、threadを他の仕事が使えるように解放するようにします。
+<p>今度は上の例ほど単純にはいきません。なぜなら最初に説明したように、JavaScriptではloopの中のようなProgramの途中で、実行を中断することはできないためです。しかし少し考えれば、loop文を2つの関数に分割して、お互いに呼び出し合えば良いということがわかると思います。結果は次のようになります。
+<pre>function g(){
+	if(i&lt;n){
+		do_something(i);
+		setTimeout(g1,1);
+	}
+}
+function g1(){
+	do_another(i++);
+	setTimeout(g,1);
+}</pre>
+<p>では、次のようなもう少し複雑なProgramはどうでしょうか。
+<pre>function h(){
+	p=2;
+	OUTER:
+	for(i=3;i&lt;n;i++){
+		for(j=2;j&lt;i;j++){
+			if(i%j==0)continue OUTER;
+		}
+		p=i;
+	}
+}</pre>
+<p>loop文が入れ子になっているため、この関数の実行にはとても長い時間がかかる可能性があります。そのため、繰り返しの適当な所でthreadを解放するようにしたいとしましょう。
+<p>今回はloop文が入れ子になっていますし、また、内側のloop文の中ではlabelつきbreakを使って一気に外側のloopに戻るという構造になっています。10行に満たない簡単なProgramですが、どのように分割してやればよいかわかるでしょうか? 
+<p>じっと見ているだけでは、ちょっとわからないかもしれませんね。こういう場合には、Programを平らにしてみるとわかりやすくなります。「平ら」というのはつまり、入れ子構造をlabelとgotoを使った形にしてみることです。するとこれは次のようになります。
+<pre>function h(){
+		p=2;
+		i=3;
+	LABEL1:
+		if(!(i&lt;n))goto LABEL6;
+		j=2;
+	LABEL2:
+		if(!(j&lt;i))goto LABEL4;
+		if(!(i%j==0))goto LABEL3;
+		goto LABEL5;
+	LABEL3:
+		j++;
+		goto LABEL2;
+	LABEL4:
+		p=i;
+	LABEL5:
+		i++;
+		goto LABEL1;
+	LABEL6:
+}</pre>
+<p>JavaScriptにはgoto文はありませんので、実際にはこれは正しいJavaScript Programではありません。しかしこうして見ると、Programの切れ目がはっきりしたのではないでしょうか? そうです。labelからlabelまでのblockをそのまま関数へと分割してやればいいのです。またこうすると、gotoをsetTimeoutに置き換えてやることで、blockの切れ目でthreadを解放できることになります。
+<pre>function h(){
+		p=3;
+		i=3;
+		setTimeout(LABEL1,1);
+	function LABEL1(){
+		if(!(i&lt;n))setTimeout(LABEL6,1);
+		j=2;
+		setTimeout(LABEL2,1);
+	}
+	function LABEL2(){
+		if(!(j&lt;i))setTimeout(LABEL4,1);
+		if(!(i%j==0))setTimeout(LABEL3,1);
+		setTimeout(LABEL5,1);
+	}
+	function LABEL3(){
+		j++;
+		setTimeout(LABEL2,1);
+	}
+	function LABEL4(){
+		p=i;
+		setTimeout(LABEL5,1);
+	}
+	function LABEL5(){
+		i++;
+		setTimeout(LABEL1,1);
+	function LABEL6(){
+	}
+}</pre>
+<p>このように、一度labelとgotoを使った形に置き換えて考えてやれば、どんなに複雑に入れ子にされたProgramであっても、自動的に書き換えてやることができそうです。
+<p>でもちょっと待ってください。こうやってloop文をバラバラにしたとしても、そこで呼び出されている関数(たとえば先ほどの例にあったdo_somethingやdo_another)の中で長大なloopなどを実行されてしまったら、結局そこでthreadが独占されてしまいます。そのため、呼び出されている関数もthreadを解放できるように、同様に書き換えてやることを考えます。しかし、関数呼び出しが絡むと、問題はもっと複雑になります。
+<p>関数は自身の処理を終えると呼出し元に実行を返しますが、どこに返すべきかは呼び出された際に関数stackに積んでおきます。一方、JavaScriptではthreadを解放できるのはEvent handlerからreturnしたときだけですから、threadを解放するということは関数stackを空にするということです。関数stackが空になってしまっては、後で呼出し元に戻る際に戻るべき先がわからなくなってしまっています。これはどうしたらいいでしょうか? 
+<p>Concurrent.Threadでは、これを継続渡し形式を利用することで解決しています。
+<h2>継続渡し形式(CPS)</h2>
+<p>継続渡し形式(Continuation Passing Style ― CPS)とは、関数を呼び出す際に続きの処理(これを「継続」と呼びます)を表す関数を引数として渡すようなProgram形式のことをいいます。またCPSでは、関数の結果をreturnする代わりに、渡された継続を呼び出すようにします。関数がreturnすることはないため、基本的にCPSのProgramは実行が進むに従って、関数呼び出しはどんどん深くなる一方になります。
+<p>具体的にどんなものか、例で見てみましょう。まずは階乗を求める関数facを、CPSではない通常のProgram形式で記述してみます。
+<pre>function fac(n,a){
+	if(n==0){
+		return a;
+	} else {
+		return fac(n-1,a*n);
+	}
+}
+
+var x=fac(10,1);//10の階乗を求める
+...省略</pre>
+<p>同じことをするProgramをCPSで記述すると次のようになります。
+<pre>function fac(n,a,k){
+	if(n==0){
+		k(a);
+	} else {
+		fac(n-1,a*n,k);
+	}
+}
+
+fac(10,1,rest);
+function rest(r){
+	var x=r;
+	...省略
+}
+</pre>
+<p>まず、関数facが続きの処理(継続)を受け取るように引数kを増やしています(1行目)。そして3行目のreturn文は、先に言ったとおり、受け取った継続に結果を渡して呼び出すようになっています。
+<p>次に、このfacを呼び出す側について見てみましょう。9行目の呼び出しでは第3引数として関数restを渡しています。このrestが続きの処理を表しています。facの後の続きの処理というのは、facの結果を変数xに代入することです。CPSではfacの結果は関数に渡されるのでしたから、restの内容は上のように受け取った値をxに代入して、さらに続きの処理を続けるということになります。5行目のfacの再帰呼び出しは少々わかりづらいかもしれませんが、ここでのfacの呼び出しの後の続きの処理とは、facの結果を返すことです。結果を返すのは継続(k)を呼び出すことになったわけですから、結局ここでの続きの処理というのはk自身です。従って、facにはkを渡せばよいということになります。(詳しい人へ: 演算子いえども関数の一種ですから、本来であればCPSでは演算子による計算にも継続を渡します。また、普通CPSと言ったときには関数呼び出しの引数にはアトム(変数や即値)のみを置くようにしますので、今回のProgram例は厳密にはCPSとは言えません。しかしそこは、説明の簡潔さを優先しました。)
+<p>こうしてCPSで表現したProgramを見てみると、関数を呼び出した後には、いつも何もしていないことがわかると思います。関数呼び出しの後に何もすることがないということは、呼び出しから"戻ってくる必要がない"ということでもあります。つまり、関数を呼んだら行きっぱなしで良いのです。
+<p>この"行ったら戻ってこない"という性質は、実はgotoと同じものです。そのため、乱暴な言い方をすれば、通常のProgramをCPSに書き換えるということは、関数呼び出しをgotoに書き換えることだと考えることができます。実際、CPSで定義したfacは、再帰呼び出しを先頭へのgotoに置き換えてしまって、次のように書き換えられます。
+<pre>function fac(n,a,k){
+  FAC:
+	if(n==0){
+		k(a);
+	} else {
+		n=n-1;
+		a=n*a;
+		goto FAC;
+	}
+}</pre>
+<p>ここで変数n、aの値を上書きしてしまっても大丈夫なのは、CPSでは関数呼び出しから戻ってくることがないため、もとの値が必要になることがないことが判っているからです。そのため、新しくstack frameを積み上げることなく、現在のstack frameを再利用できるという判断ができるのです。(詳しい人へ: 正確さのために捕捉しておくと、stack frameの再利用のためには、現在の関数に入れ子になっている関数、つまりclosureが外に漏れ出していないということが必要になります。たとえ現在の関数に実行が戻ってくることはなくても、後でclosureが呼び出された際に現在のstack frameが参照される可能性があるからです。今回の場合は入れ子になった関数がないので、再利用できるのは明らかですね。)
+<p>このように再帰呼び出しをloopにするなど、Programの最適化がしやすいことがCPSの便利な点です。実際、そのためCPSは関数型言語をcompileする際の中間表現として一般的に用いられています。もっと詳しく知りたいという人は、『Compiling with Continuations』(Andrew W. Appele著／Cambridge University Press刊)などを参照してください。
+<h2>関数呼び出しが入ったProgramを書き換える</h2>
+<p>さて、話を再び並行処理のための書き換えに戻しましょう。他の関数から呼び出された関数の中でもうまくthreadを解放するにはどうすれば良いのかを検討していたのでした。
+<p>CPSが関数呼び出しをgotoにするようなものだという話をしましたが、gotoになってしまえば、もうこの問題は解決したも同然です。なぜなら、gotoはほぼそのままsetTimeoutに置き換えられることは、すでに説明したとおりだからです。つまり上でCPSに書き換えた関数facは、次のように単純に書き換えることができます。
+<pre>function fac(n,a,k){
+	if(n==0){
+		setTimeout(k,1,a);
+	} else {
+		setTimeout(fac,1,n-1,a*n,k);
+	}
+}</pre>
+<p>見てわかるように、これは関数呼び出しの部分を単純にsetTimeoutを使って書き換えただけです(※指定した関数を呼び出す際の引数をsetTimeoutに追加で指定できるのは、MozillaやOperaでの拡張仕様ですが、ここではCodeを単純化するために使用しています。例えば、上の「setTimeout(k, 1, a)」は、「setTimeout(function(){ k(a); }, 1)」と同義です)。
+<p>こうすることで、関数呼び出しのたびにthreadをいったん解放することができるようになり、また、関数から呼び出し元へ戻ることも、継続の呼び出しによって適切に行われることがわかるかと思います。
+<p>それでは、loop文を含む入れ子構造と、関数呼び出しの両方が使われているProgramを書き換えてみましょう。例として、指定されたDOM Node以下の全Nodeを辿る次の関数を用います。
+<pre>function traverse(node){
+	var i;
+	do_something(node);
+	for(i=0;i&lt;node.childNodes.length;i++){
+		traverse(node.childNodes[i]);
+	}
+	return;
+}</pre>
+<p>まずはgotoとlabelを用いてProgramを平らにします。
+<pre>function traverse(node){
+		var  i;
+		do_something(node);
+	LABEL1:
+		i=0;
+	LABEL2:
+		if(!(i&lt;node.childNodes.length))goto LABEL4;
+		traverse(node.childNodes[i]);
+	LABEL3:
+		i++;
+		goto LABEL2;
+	LABEL4:
+		return;
+}</pre>
+<p>次にProgramをCPSに書き換えます。
+<pre>function traverse(node,k){
+		var  i;
+		do_something(node,LABEL1);
+	LABEL1:
+		i=0;
+	LABEL2:
+		if(!(i&lt;node.childNodes.length))goto LABEL4;
+		traverse(node.childNodes[i],LABEL3);
+	LABEL3:
+		i++;
+		goto LABEL2;
+	LABEL4:
+		k();
+}</pre>
+<p>ここで、各関数呼び出しの引数には、継続の代わりとして関数呼び出しの直下にあるlabelを渡しておきます。上で説明したように、labelは後で関数名になりますから、最終的にはこれで辻褄が合うわけです。最後に、blockを関数に、gotoと関数呼び出しをsetTimeoutに書き換えれば完成です。
+<pre>function traverse(node,k){
+		var  i;
+		setTimeout(do_something,1,node,LABEL1);
+	function LABEL1(){
+		i=0;
+		setTimeout(LABEL2,1);
+	}
+	function LABEL2(){
+		if(!(i&lt;node.childNodes.length))setTimeout(LABEL4,1);
+		setTimeout(traverse,1,node.childNodes[i],LABEL3);
+	}
+	function LABEL3(){
+		i++;
+		setTimeout(LABEL2,1);
+	}
+	function LABEL4(){
+		setTimeout(k,1);
+	}
+}</pre>
+<h2>trampoline</h2>
+<p>Programを書き換えてsetTimeoutを挿み込むことで、並行処理を実現できるようになりましたが、上のProgramにはとても無駄が多いということにお気づきでしょうか? このProgramはsetTimeoutでtimerを設定して、threadを解放するということを頻繁に行います。setTimeoutによる実行再開はそんなに軽い処理ではありませんから、このままではoverheadが非常に大きくなってしまいます。
+<p>上のProgramでは、blockからblockへ実行が移る度にthreadを解放するようにしていましたが、実用上はそんなに頻繁に解放する必要はありません。人間から見て気にならない程度の短い時間であれば、threadを使い続けても良いのです。1つの処理がthreadを使い続けるこの短い時間のことを、timesliceと呼びます。timesliceの間threadを解放しないで動作するようにするために、Concurrent.Threadではtrampolineを用いています。
+<p>trampolineというのはPrograming言語処理系の実装でよく用いられる仕組みのことで、関数を繰り返し呼び出す機構のことを指します。trampolineから呼び出される関数は、呼び出されるとその結果として次に実行すべき関数を返すようにしておきます。trampolineは返された関数を同じようにして呼び出し、返された関数に対しても同様に繰り返し呼び出しを続けます。trampolineの便利な所は、繰り返し関数を呼び出すその合間に、色々な処理を挿入することができるということです。今回の場合は、一定時間が経過したらsetTimeoutを挿入してthreadを解放するようにするわけです。(詳しい人へ: もうお気づきでしょうが、trampolineとCPSの間には深いつながりがあります。気になる人は『Trampolined style』(Ganz et al)を参照してみてください。)
+<p>上で例に用いた関数traverseを、trampolineで使えるようにしてみましょう。trampolineから呼び出される関数は次に実行すべき関数を返せばよかったわけですから、上ではsetTimeoutになっていた部分を関数を返すように変更すれば良さそうです。しかしまた、関数を呼び出す際の引数も覚えておかなくてはなりませんので、関数と引数を組にしてまとめて返すようにします。従って次のように書き換えます
+<pre>function traverse(node,k){
+		var  i;
+		return {func:do_something,args:[node,LABEL1]};
+	function LABEL1(){
+		if(!node.childNodes)return {func:LABEL4,args:[]};
+		i=0;
+		return {func:LABEL2,args:[]};
+	}
+	function LABEL2(){
+		if(!(i&lt;node.childNodes.length))return {func:LABEL4,args:[]};
+		return {func:traverse,args:[node.childNodes[i],LABEL3]};
+	}
+	function LABEL3(){
+		i++;
+		return {func:LABEL2,arg:[]};
+	}
+	function LABEL4(){
+		return {func:k,args:[]};
+	}
+}</pre>
+<p>このように書き換えられたProgramは、trampolineを表す次のような関数での上で実行することができます。
+<pre>function trampoline(ctxt){
+	var limit=(new Date).valueOf()+TIME_SLICE;
+	do {
+		ctxt=ctxt.func.apply(null,ctxt.args);
+	} while(new Date&lt;limit);//timesliceの間繰り返す
+	setTimeout(trampoline,1,ctxt);
+}</pre>
+<p>この関数は、TIME_SLICEで指定された時間はthreadを解放せずに実行を続け、timesliceを使い切るとsetTimeoutで自分自身を再度呼び出すように予約して、いったん実行を終了するというように動きます。この実行の様子を図に表すと下のようになります。
+<p><img src="fig2.png">
+<p>こうして適当な時機でthreadを解放することで、より効率的に並行処理を実現することができます。
+<h2>code変換</h2>
+<p>ここまででConcurrnt.ThreadがJavaScript Programをどのような形に書き換えるのかを説明してきました。実際にはConcurrent.Threadはこのような変換作業をJavaScript Programの実行時に行っています。Concurent.Threadがこのような実行時のProgram書き換えをどのように行っているのかを簡単に説明しておきます。
+<ol>
+<li>算譜を得る
+<p>JavaScriptでは関数を文字列化することで、その関数を定義している算譜を得ることができます。そのためこれを利用して、並行処理用に変換したい関数を文字列化して、その算譜を実行時に得ます。
+<li>構文解析する
+<p>1.で得た算譜を解析して、Programから扱いやすいdata構造(構文木)を作ります。Concurrent.Threadはこの作業を行う構文解析器として、JavaによるJavaScript実装であるRhinoのCodeの一部を、JavaScriptに移植して利用しています。
+<li>Programを書き換える
+<p>次に、これまで述べてきたような形へとProgramを変形させます。これは2.で得られた構文木を適宜組み換えることで行われます。
+<li>文字列にしてevalで評価する
+<p>組み換えたら、結果のProgram(構文木)を再び文字列表現に直して、組み込み関数evalに渡します。evalは文字列をJavaScript Programとして評価し、その結果を返すので、これで並行処理用のJavaScript関数を実行時に得ることができるというわけです。
+</ol><p>以上のように、Concurrent.ThreadはJavaScriptのProgramCodeを異なる表現のProgramCodeへと変換しているという点で、compilerと同じような仕事をしています。また、Concurrent.Thread自身もJavaScript自身で記述されているわけですから、これはある意味でJavaScript to JavaScriptの自前compilerとも呼べるような構成になっています。
