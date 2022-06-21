@@ -1,0 +1,107 @@
+<title>js multi thread</title><style>body,pre{font-family:"MS Gothic"}pre{border:1px solid #acf;background:#eef}p{line-height:1.5em}</style>
+<h1>JavaScriptへの多重thread programingの導入</h1>
+<h2></h2>
+<p>多くのWeb siteが全面的に、あるいは部分的にAjaxを利用して実装されるようになってきました。しかし、依然として複雑なAjax applicationを開発することが困難であるという状況は変わってはいません。いったいAjax開発のなにがそんなに難しいのでしょうか? serverとの非同期通信でしょうか? それともGUIprograming? しかしこれらはDesktop上のwindow applicationが日常的に行っている仕事です。では、どうして Ajax applicationの開発は特別に難しいというのでしょうか?
+<h2>Ajax applicationの難しさ</h2>
+<p>簡単な例を見ながら考えてみましょう。Ajaxで木型の掲示板を作ることを考えてみます。この掲示板では全ての記事を一度に読み込むのではなく、利用者の要求に応じてserverと通信を行い各記事のdataを読み込むことにします。各記事は掲示板の中で固有なIDと、投稿者の名前、記事の内容、そして子記事のIDの配列という4つの情報を持つものとします。説明の便宜上、1つの記事のdataを読み込む関数getArticleがあるとしましょう。これは記事のID(整数値)を引数に取り、serverからIDに対応する記事のdataを取得して、記事の情報に対応する4つのproperty、id、name、content、childrenを持つObjectを返します。これを使うと記事のIDを受け取ってその内容を表示する関数は、例えば次のように書くことができます。
+<pre>function(id){
+	var a=getArticle(id);
+	document.writeln(a.name+""+a.content);
+}</pre>
+<p>しかしこの関数を同じIDに対して何度も呼び出すと、すでに読み込んである記事について何度もserverと通信を行うため無駄が多いことが分かります。これを改善するため、getArticleにcache機能を追加したgetArticleWithCacheを考えてみましょう。ここでは単純に、getArticleで一度読み込んだ記事のdataを大域変数で覚えておくことにします。
+<pre>var cache={};
+function getArticleWithCache(id){
+	if(!cache[id]){
+		cache[id]=getArticle(id);
+	}
+	return cache[id];
+}</pre>
+<p>さて、これで一度読み込んだ記事をcacheできるようになりました。今度はこれを利用して、全ての記事のdataを読み込む関数backgroundLoadを考えてみましょう。利用者が記事を読んでいる間に裏で記事の先読みを行うのが目的です。記事のdataは木型になっているので、次のように再帰的に木を辿ることで全ての記事を読み込むことができると考えられます。
+<pre>function backgroundLoad(ids){
+	for(var i=0;i&lt;ids.length;i++){
+		var a=getArticleWithCache(ids[i]);
+		backgroundLoad(a.children);
+	}
+}</pre>
+<p>このbackgroundLoadはIDの配列を引数に取り、その各IDに対して上で定義したgetArticleWithCacheを呼び出します。これでIDに対応する記事のdataがcacheされます。そして読み込んだ記事の子記事のIDに対してbackgroundLoadを再帰的に呼び出すことで、木全体をcacheすることができます。
+<p>ここまで全てうまくいっているように見えます。しかし、一度でもAjax開発を経験したことのある方ならば、これではうまくいかないということはすでにおわかりだと思います。これまでの例ではgetArticleの中で同期通信を利用していると暗黙に仮定して話を進めてきました。しかし、JavaScriptでserverと通信を行う場合には原則的に非同期通信を用いなければなりません。これはJavaScriptには1つしかthreadがないことに起因しています。1つのthreadの上でGUIを含む全ての処理を行うということは、単純さの上では良いprograming方式です。同期に関わる複雑な問題を考えなくてすむからです。しかし一方で、使用応答性の高いapplicationを作るうえでは大きな問題でもあります。なぜならば1つしかthreadがない環境では、threadが仕事をしている間は利用者がmouseをclickしたり鍵盤を叩いたりしてもそれに対する応答をすることができないからです。
+<p>このような環境で同期通信を行ったらなにが起こるでしょうか? 同期通信というのは、通信の結果が得られるまでprogramの実行がそこで止まる方式のことです。通信を待っている間も計算が終わったわけではないので、threadは利用者応答に使うことができません。getArticleはその通信の結果を待ってから結果を返しますが、getArticleから実行が戻ってくるまでthreadは他の処理に使うことはできませんから、通信の結果を待っている間は利用者に応答することができずにbrowserが凍結したように見えてしまいます。getArticleを利用して実装されているgetArticleWithCache、そしてbackgroundLoadが実行されている間も同様です。全ての記事dataをdownloadするには相当な時間がかかるはずですから、browserが凍結してしまうというのはbackgroundLoadにとっては深刻な問題です。そもそもbrowserが凍結してしまうようでは、利用者が記事を読んでいる裏側で先読みを行うという目的が達成できません。
+<pre>var cache={};
+function getArticleWithCache(id,callback){
+	if(!cache[id]){
+		callback(cache[id]);
+	}else{
+		getArticle(id,function(a){
+			cache[id]=a;
+			callback(a);
+		})
+	}
+}</pre>
+<p>今回も内部でgetArticle関数を呼び出していますが、非同期通信版のgetArticleが第二引数に関数を受け取るようになっていることに注意してください。このgetArticleは呼び出されるとserverに要求を送信しますが、反応が返ってくるのを待たずに処理を呼出し元へと返します。つまり、呼出し元に戻った時点では、通信の結果は返されません。getArticleの呼び出しから処理が戻ってきたあとには何もしないようにすることで、いったんprogramを終了させます。こうすることで、通信の結果がserverから得られてcallback関数が呼び出されるまではthreadが他の仕事に使えるようになるわけです。serverから反応が得られると、getArticleの第二引数に指定された関数が通信の結果を引数として呼び出されます。実際のところ、getArticleの実行結果はcallback関数の呼び出しによって返されるようになっているわけです。getArticleWithCacheも同様に、第二引数にcallback関数を受け取るように変更されています。ここで受け取ったcallback関数はgetArticleへ渡した関数の中で呼び出すことで、通信処理が終わったあとに実行されるようになるわけです。
+<p>これだけでも随分と面倒なことになったと思われるかもしれません。しかし、次のbackgroundLoadの書き直しはもっと複雑です。backgroundLoadも同じようにcallback関数を受け取るように変更して、次のように書き直すことができます。
+<pre>function backgroundLoad(ids,callback){
+	var i=0;
+	function l(){
+		if(i&lt;ids.length){
+			getArticleWithCache(ids[i++],function(a){
+				backgroundLoad(a.children,l);
+			});
+		} else {
+			callback();
+		}
+	}
+	l();
+}</pre>
+<p>書き直さらにもう1つの問題は、これまで定義してきた関数を非同期通信を使うように書き換えるには、関数の引数としてcallback関数を受け取るように引数の形を変更しなければならなかったということです。内部の変更が外部から見えてしまうようでは、module化において大きな問題であるということが分かるかと思います。す前と見比べてみると随分と違う関数になってしまった印象を受けるかもしれません。しかし実のところ、行っている処理の内容は全く変わっていません。つまり、IDの配列を受け取って、その各要素にgetArticleWithCacheを呼び出し、得られた結果の子記事に対して再帰的にbackgroundLoadを適用しています。しかし、書き直し前にはfor文で表現されていた配列に対するloopすら、上の算譜からは簡単に読み取ることができません。どうして同じことをしているにも関わらず、こんなにも違うprogramになってしまったのでしょうか? これはgetArticleWithCacheのように通信を必要とする関数を呼び出した後には一度programを終了しなければならないことに起因しています。programを終了しなければ、通信の結果を受け取るべきcallback関数を呼び出されないためです。for文のようなloop構文の途中でprogramを中断して、あとになって中断した場所から再開するようなことはJavaScriptではできないため、loop構文は使わず、代わりにcallback関数を再帰的に渡し合うことでloopを表現しています(詳しい人へ：これは継続渡し形式(CPS)を手で記述していることに相当します)。loop構文が全く使えないため、先に挙げた木を辿るような簡単なprogramですら複雑な記述を要求されてしまうわけです。このようにevent駆動型のprogramingでは、loopのような制御手順の記述がわかりづらくなってしまうということが「制御手順問題」と呼ばれて知られています(<a href="http://www.cis.upenn.edu/~stevez/papers/LZ04a.pdf">詳細</a>)
+<h2>多重thread programingへの招待</h2>
+<p>上で述べたAjax開発の難しさを緩和してくれるものとして、JavaScriptで多重threadを利用可能にする機能集合Concurrent.Threadを紹介しましょう。これは全てJavaScriptで実装されている無償の機能集合で、Mozilla Public License / GNU General Public Licenseの下で利用できます。算譜は<a href="http://jsthread.sourceforge.net">Web site</a>からdownloadすることができます。
+<p>さっそくdownloadして使ってみましょう。以下ではdownloadした算譜をConcurrent.Thread.jsというfile名で保存したこととします。まずは深く考えずに次のprogramを実行してみましょう。
+<pre>&lt;script type="text/javascript" src="Concurrent.Thread.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+Concurrent.Thread.create(function(){
+	var i=0;
+	while(1){
+		document.body.innerHTML+=i+++"&lt;br&gt;";
+	}
+});
+&lt;/script&gt;</pre>
+<p>このprogramを実行すると、0から順番に数字が表示されるはずです。数字は下に続けてどんどん書き出されていきますが、その様子は頁をscrollさせることで追いかけることができると思います。算譜をのぞいて見ると、中では「while(1)」とあるように単純に無限loopで書かれています。通常このようなJavaScriptprogramを書いてしまうと、programが1つしかないthreadをずっと使い続けてしまい、browserが凍結したようになってしまいます。もちろん、画面をscrollさせることもできません。どうして上のprogramではscrollができるのかというと、その上にある「Concurrent.Thread.create」に秘密があります。これは機能集合が提供しているmethodで、新しくthreadを作るためのものです。新しく作られたthreadの上では引数に渡された関数が実行されます。上のprogramを少し書き換えて、次のようにしてみましょう。
+<pre>&lt;script type="text/javascript "src="Concurrent.Thread.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+function f(i){
+	while(1){
+		document.body.innerHTML+=i+++"&lt;br&gt;";
+	}
+}
+Concurrent.Thread.create(f,0);
+Concurrent.Thread.create(f,100000);
+&lt;/script&gt;</pre>
+<p>数字を繰り返し書き出す関数fを定義し、fを引数としてcreate methodを2回呼び出しています。2番目の引数はfにそのまま渡されます。このprogramを実行すると、最初は0から始まる小さな数字がいくつか書き出されて、次に100000から始まる大きな数字がいくつか書き出され、また小さい数字が前の続きから書き出される、というように小さな数字の列と大きな数字の列が交互に書き出されると思います。これは2つのthreadが交代で処理を行っている様子を示しています。
+<p>Concurrent.Threadのもう1つの使い方をご紹介しましょう。上の例では機能集合の提供するcreate methodを呼び出してthreadを作成していましたが、機能集合のAPI全く呼び出さないでthreadを作ることも可能です。前者の例は次のようにも書くことができます。
+<pre>&lt;script type="text/javascript" src="Concurrent.Thread.js"&gt;&lt;/script&gt;
+&lt;script type="text/x-script.multithreaded-js"&gt;
+var i=1;
+while(1){
+	document.body.innerHTML+=i+++"&lt;br&gt;";
+}
+&lt;/script&gt;</pre>
+<p>script要素の内容は通常のJavaScriptで無限loopを書いているだけですが、要素のtype属性に注目してください。「text/x -script.multithreaded-js」という見慣れない値が書かれています。script要素にこの属性を指定しておくと、Concurrent.Threadはその要素の内容を新しいthreadの上で実行してくれるのです。もちろんこの場合にも、Concurrent.Threadの本体を読み込んでおく必要がありますので、お忘れなく。
+<p>これで長い時間実行し続ける処理をしていたとしても、適当な時機で他のthreadに交代して他の仕事を並行にすることができることがわかりました。このような動作をどのようにして実現しているのかを、少しだけお話しておきましょう。一言で言えば「算譜変換」を行っています。非常に大雑把に言うと、create methodに渡された関数をいったん文字列にして、それを"細切れに"実行できるように書き換えます。そして書き換えた関数を制御手順の上で少しずつ実行するのです。制御機能は複数のthread、つまり書き換えた関数を実行する際にそれぞれがなるべく均等に実行されるように調整する役割を担います。system全体を図で表すと右のようになります。つまり、実際にはConcurrent.Threadは新しくthreadを作っているわけではなく、元々ある1つのthreadの上で擬似的に複数のthreadがあるかのように見せかけているわけです。
+<p>変換された関数が別々のthreadの上で動作しているかのように見えるとはいえ、実際には1つのthreadなので、変換された関数の中で同期通信を行ってしまうと結局はそこでbrowserが凍結したようになってしまいます。それでは問題は全く解決していないじゃないか、と思われるかもしれませんが心配には及びません。Concurrent.Threadは専用の通信機能を提供してくれています。これはJavaScriptの非同期通信の上に実装されていて、通信の結果を待っている間にも他のthreadが動くことができるように作られています。通信機能はConcurrent.Thread.Http名前空間の下にまとめられていて、例えば次のように使用します。
+<pre>&lt;script type="text/javascript"src="Concurrent.Thread.js"&gt;&lt;/script&gt;
+&lt;script type="text/x-script.multithreaded-js"&gt;
+var req=Concurrent.Thread.Http.get(url,["Accept","*"]);
+if(req.status==200){
+	alert(req.responseText);
+} else {
+	alert(req.statusText);
+}
+&lt;/script&gt;</pre>
+<p>get methodはその名の通り、指定したURLの内容をHTTPのGET methodによって取得します。第1引数にはURLを、省略可能な第2引数にはHTTP header fieldを指定する配列を渡します。get methodはserverと通信を行って、結果が得られると戻り値としてXMLHttpRequest Objectを返します。get methodから処理が返ってきたときにはすでに反応が得られていますので、callback関数で結果を受け取る必要はありません。もちろん、serverからの反応を待っている間もbrowserが凍結する心配もありません。また、serverにdataを送信するためにpost methodを使うこともできます。
+<pre>&lt;script type="text/javascript" src="Concurrent.Thread.js"&gt;&lt;/script&gt;
+&lt;script type="text/x-script.multithreaded-js"&gt;
+var req=Concurrent.Thread.Http.post(url,"key1=value1&amp;key2=value2");
+alert(req.statusText)
+&lt;/script&gt;</pre>
+<p>post methodは第一引数に送信先のURL、第二引数に送信する内容を取ります。またgetと同様に、省略可能な第三引数にheader fieldを指定することもできます。
+<p>これらの通信機能を用いて最初の例のgetArticleを実装すれば、getArticleWithCacheやbackgroundLoadといったgetArticleを利用する関数も、最初に書いた簡潔な記述のまま利用することができるようになります。もちろん、こうして実装されたbackgroundLoadが記事のdataを読み込んでいる間にも、別のthreadによって利用者への応答ができるためbrowserが凍結してしまうこともありません。JavaScriptで多重threadを使うことの便利さを感じてもらえたでしょうか。
