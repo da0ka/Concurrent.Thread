@@ -6,51 +6,51 @@
 		<h1><a href="wiki.cgi?action=SEARCH&amp;word=A+Tutorial">A Tutorial</a></h1>
 		<div class="header">
 			<ul>
-				<li><a href="#p0">����͉�?</a></li>
-				<li><a href="#p1">����ɂ��́C���E!</a></li>
-				<li><a href="#p2">�͂��߂̈��</a></li>
-				<li><a href="#p3">Thread�������@</a></li>
-				<li><a href="#p4">�ǂ�����Ă��?</a></li>
-				<li><a href="#p5">scope �\ ���������Ă܂���?</a></li>
-				<li><a href="#p6">������Ƃ����C�ő�̔閧</a></li>
-				<li><a href="#p7">�����Ɛ��</a></li>
+				<li><a href="#p0">これは何?</a></li>
+				<li><a href="#p1">こんにちは，世界!</a></li>
+				<li><a href="#p2">はじめの一歩</a></li>
+				<li><a href="#p3">Threadを作る方法</a></li>
+				<li><a href="#p4">どうやってるの?</a></li>
+				<li><a href="#p5">scope ― 何が見えてますか?</a></li>
+				<li><a href="#p6">ちょっとした，最大の秘密</a></li>
+				<li><a href="#p7">もっと先へ</a></li>
 			</ul>
 			<hr>
 		</div>
 		<div class="day">
 			<div class="body">
 				<div class="section">
-					<h2><a name="p0">����͉�?</a></h2>
-					<p>Concurrent.Thread �� JavaScript �̏�ɑ��dThread�������o�� JavaScript �@�\�W���ł���DThread�Ȃ񂩂Ȃ��Ă��C������@�\�őS�����������?�����C���̒ʂ�! Concurrent.Thread �͉����V�������Ƃ��\�ɂ͂��Ȃ��D���̑���ɁC���܂Łu�\�v�ł��������Ƃ���������(���邢�͂Ƃ��Ă�)�u�ȒP�v�ɂ��Ă����D</p>
-					<p>Thread�Ȃ񂩂���Ȃ���C�Ƃ������rhacker�̌N�͎c�O�C�܂��ʂ̋@��ɂ�����܂��傤�DThread����������C�Ə����ł��v�������Ƃ̂��邻���̃A�i�^�͂��߂łƂ��D�\�\�悤�����CConcurrent.Thread �̐��E�ցD</p>
-					<h2><a name="p1">����ɂ��́C���E!</a></h2>
-					<p>���͂Ƃ�����C�܂��͎g���Ă݂�Ƃ��悤�D�ŏ��ɏ���program�Ƃ����΁C�×����R���ƌ��܂��Ă���D</p>
+					<h2><a name="p0">これは何?</a></h2>
+					<p>Concurrent.ThreadはJavaScriptの上に多重Thread環境を作り出すJavaScript機能集合である。Threadなんかなくても，今ある機能で全部書けるって? そう，その通り! Concurrent.Threadは何も新しいことを可能にはしない。その代わりに，今まで「可能」であったことを少しだけ(あるいはとっても)「簡単」にしてくれる。</p>
+					<p>Threadなんかいらないよ，という凄腕hackerの君は残念，また別の機会にお会いしましょう。Threadがあったら，と少しでも思ったことのあるそこのアナタはおめでとう。――ようこそ，Concurrent.Threadの世界へ。</p>
+					<h2><a name="p1">こんにちは，世界!</a></h2>
+					<p>何はともあれ，まずは使ってみるとしよう。最初に書くprogramといえば，古来よりコレと決まっている。</p>
 					<pre>&lt;html&gt;&lt;body&gt;
-    &lt;script type="text/javascript" src="Concurrent.Thread.Compiler.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="Concurrent.Thread.Compiler.js"&gt;&lt;/script&gt;
 	&lt;script type="text/javascript"&gt;
-		  function hello(){
-			  document.body.innerHTML+="H";
-			  document.body.innerHTML+="e";
-			  document.body.innerHTML+="l";
-			  document.body.innerHTML+="l";
-			  document.body.innerHTML+="o";
-			  document.body.innerHTML+=",";
-			  document.body.innerHTML+=" ";
-			  document.body.innerHTML+="w";
-			  document.body.innerHTML+="o";
-			  document.body.innerHTML+="r";
-			  document.body.innerHTML+="l";
-			  document.body.innerHTML+="d";
-			  document.body.innerHTML+="!";
-		  }
-		  Concurrent.Thread.create(hello);
+		function hello(){
+			document.body.innerHTML+="H";
+			document.body.innerHTML+="e";
+			document.body.innerHTML+="l";
+			document.body.innerHTML+="l";
+			document.body.innerHTML+="o";
+			document.body.innerHTML+=",";
+			document.body.innerHTML+=" ";
+			document.body.innerHTML+="w";
+			document.body.innerHTML+="o";
+			document.body.innerHTML+="r";
+			document.body.innerHTML+="l";
+			document.body.innerHTML+="d";
+			document.body.innerHTML+="!";
+		}
+		Concurrent.Thread.create(hello)
 	&lt;/script&gt;
 &lt;/body&gt;&lt;/html&gt;</pre>
-					<p>�ق�ł���!�ȒP�ł���?</p>
-					<p>�ł��C�����ł͉����������낢���Ƃ͋N�����Ă͂��Ȃ��D����ł͂������Ă݂悤�D</p>
+					<p>ほらできた!簡単でしょ?</p>
+					<p>でも，ここでは何も面白いことは起こってはいない。それではこうしてみよう。</p>
 					<pre>&lt;html&gt;
 &lt;body&gt;
-    &lt;script type="text/javascript" src="Concurrent.Thread.Compiler.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="Concurrent.Thread.Compiler.js"&gt;&lt;/script&gt;
 	&lt;script type="text/javascript"&gt;
 		function hello(){
 			document.body.innerHTML+="H";Concurrent.Thread.yield();
@@ -73,17 +73,17 @@
 &lt;/body&gt;
 &lt;/html&gt;
 </pre>
-					<p>���x�͏����΂��苻���[�����ʂɂȂ����̂ł͂Ȃ�����? ����������2���d�Ȃ��ĕ\������Ă���͂����D(���������Ȃ��Ă��Ȃ���΁C���Ȃ���browser�ɂ͑Ή����Ă��Ȃ��Ƃ������Ƃ��D�\����Ȃ��D�݊����ɂ��Ă̍����m�F���Ăق����D)�����C��X�͂ǂ��ɂ��u"H"�� 2�����đłāv�ȂǂƂ������Ƃ͏����Ă��Ȃ��D����͂܂�C�֐� hello �𓯎��� 2 ���s���Ă���̂��D���ꂪ���Ԃ�C���Ȃ����~�����������̂ł��傤?(��������Ȃ�������S�����Ȃ���)</p>
-					<h2><a name="p2">�͂��߂̈��</a></h2>
-					<p>�����قǂ�program�ɂ��ĉ�����Ă������D</p>
-					<p>�ŏ��ɏq�ׂ��Ƃ��� Concurrent.Thread �͋@�\�W���ł���D���̂��߁C�g�p���邽�߂ɂ͂܂������ǂݍ��܂Ȃ���΂Ȃ�Ȃ��D��̗�ł� 3 �s�ڂ������ł���D</p>
+					<p>今度は少しばかり興味深い結果になったのではないかな? 同じ文字が2つずつ重なって表示されているはずだ(もしそうなっていなければ，あなたのbrowserには対応していないということだ。申し訳ない。互換性についての項を確認して欲しい)。だが，我々はどこにも「"H"を2個続けて打て」などということは書いていない。これはつまり，関数helloを同時に2つ実行しているのだ。これが多分，あなたが欲しかったものでしょう?(そうじゃなかったらゴメンなさい)</p>
+					<h2><a name="p2">はじめの一歩</a></h2>
+					<p>先ほどのprogramについて解説していこう。</p>
+					<p>最初に述べた通りConcurrent.Threadは機能集合である。そのため，使用するためにはまずそれを読み込まなければならない。上の例では3行目がそうである。</p>
 					<pre>&lt;script type="text/javascript" src="Concurrent.Thread.Compiler.js"&gt;&lt;/script&gt;
 </pre>
-					<p>�������Cfile���͂��Ȃ���file��ۑ������Ƃ��̖��O�ɂ���悤�ɁD����Ŏg�������͊����ł���D</p>
-					<p>���Ƃ͕��ʂ� JavaScript �������΂悢�D�������C���dThread���g��������΋@�\�W�����񋟂��� API ��p���Ȃ���΂Ȃ�Ȃ��D���̍s�̂悤�ɂ��D</p>
+					<p>もちろん，file名はあなたがfileを保存した時の名前にするように。これで使う準備は完了である。</p>
+					<p>後は普通にJavaScriptを書けばよい。ただし，多重Threadが使いたければ機能集合が提供するAPIを用いなければならない。次の行のようにだ。</p>
 					<pre>Concurrent.Thread.create(hello);
 </pre>
-					<p>��������ƁC�֐� hello ���V�������ꂽ�ʂ�Thread�̏�Ŏ��s�����D�����𓯎��Ɏ��s��������΁Ccreate method������������ׂ�΂����D</p>
+					<p>こうすると，関数helloが新しく作られた別のThreadの上で実行される。複数を同時に実行したければ，create methodをたくさん並べればいい。</p>
 					<pre>Concurrent.Thread.create(hello);
 Concurrent.Thread.create(hello);
 Concurrent.Thread.create(hello);
@@ -91,117 +91,82 @@ Concurrent.Thread.create(hello);
 .
 .
 </pre>
-					<p>����ō������炠�Ȃ���Thread programer���D</p>
-					<p>2�߂̗�Ŏg���Ă��� yield method�́C������ Java programer�̗\�z�ʂ�(�����ĂقƂ�ǂ��ׂĂ� Ruby programer�̊��҂𗠐؂���)�C���ݎ��s����Thread�̎��s�����𖾎��I�ɖ����n�����̂ł���D</p>
-					<p>�����ĉ]���K�v���Ȃ���������Ȃ����C������ JavaScript code�����s�Ɏ��s����Ă���Ƃ����Ă��C���ۂɂ���u�ԂɎ��s�ł���code�͂ЂƂ����ł���DThread�͂ЂƂ����Ȃ����s���������ɓn���������ƂŁC�l�Ԃ���͓����ɓ����Ă���悤�Ɍ��������Ă���̂ł���DThread�͈��̒Z�����Ԃ̂��������s����ێ����C���̎d���Ɏז�����邱�ƂȂ����s�𑱂���D���̒Z�����Ԃ̂��Ƃ�time slice�ƌĂԁD��ŏq�ׂ� yield �́Ctime slice���g���؂�O�ɖ����I�Ɏ��s�������ɏ��邽�߂̂��̂ł���D</p>
-					<p>yield ���g���T�^�I�ȏ�ʂ́C���̂悤�ɐ��E�������ԂɂȂ�܂ő҂K�v������Ƃ����D</p>
-					<pre>while(!allsRightWithTheWorld()) Concurrent.Thread.yield();
-</pre>
-					<p>yield ���g�킸�ɁC�����C</p>
-					<pre>while(!allsRightWithTheWorld()) ;
-</pre>
-					<p>�Ə������Ƃ��̈Ⴂ�́CCPU �𖳑ʌ������Ȃ��Ƃ������Ƃł���D��҂�time slice���g���؂�܂ŉ��x���ړI�̏�ԂɂȂ��������m�F���邪�C����͊T�˖��ʂȎd���ł���D���̂Ȃ�C����Thread��time slice���g���؂�܂ő���Thread�͎d�������邱�Ƃ��ł��Ȃ��̂ŁC���̒N�������E�̏�Ԃ�ς��邱�Ƃ͂ł��Ȃ����炾�D</p>
-					<p>�����p�������ɗ����킵�̂ЂƂɁCbrowser�� body �v�f�𐶐�����܂ŏ�����x������Ƃ������̂�����D</p>
+					<p>これで今日からあなたもThread programerだ。</p>
+					<p>2つめの例で使われているyield methodは，多くのJava programerの予想通り(そしてほとんど全てのRuby programerの期待を裏切って)，現在実行中のThreadの実行権限を明示的に明け渡すものである。</p>
+					<p>あえて云う必要もないかもしれないが，複数のJavaScript codeが並行に実行されているといっても，実際にある瞬間に実行できるcodeは1つだけである。Threadは1つしかない実行権を高速に渡しあうことで，人間からは同時に動いているように見せかけているのである。Threadは一定の短い時間のあいだ実行権を保持し，他の仕事に邪魔されることなく実行を続ける。この短い時間のことをtime sliceと呼ぶ。上で述べたyieldは，time sliceを使い切る前に明示的に実行権を次に譲るためのものである。</p>
+					<p>yieldを使う典型的な場面は，次のように世界がある状態になるまで待つ必要がある時だ。</p>
+					<pre>while(!allsRightWithTheWorld())Concurrent.Thread.yield()</pre>
+					<p>yieldを使わずに，ただ，</p>
+					<pre>while(!allsRightWithTheWorld())</pre>
+					<p>と書いた時の違いは，CPUを無駄遣いしないということである。後者はtime sliceを使い切るまで何度も目的の状態になったかを確認するが，これは概ね無駄な仕事である。何故なら，このThreadがtime sliceを使い切るまで他のThreadは仕事をすることができないので，他の誰かが世界の状態を変えることはできないからだ。</p>
+					<p>これを用いた役に立つ慣わしの1つに，browserがbody要素を生成するまで処理を遅延するというものがある。</p>
 					<pre>Concurrent.Thread.create(function(){
-    while(!document.body) Concurrent.Thread.yield();
-    initialize();
-});
-</pre>
-					<p>��������ƁCHTML �� body�v�f��K�v�Ƃ���悤�ȏ������������Cbody �v�f���g����悤�ɂȂ邻�̎��܂Œx�点�邱�Ƃ��ł���D���M���ׂ��Ȃ̂́Cbody �v�f���g����悤�ɂȂ�̂́C��ʓI�ɂ́Conload event handler���Ă΂����������Ƒ����i�K���Ƃ������Ƃ��D������application�ɂ���ẮConload ��p������������i�K�ŗ��p�҂��@�\���g����悤�ɂł���D���̕��@�́Cwhile �̏�������ς���Α��ɂ������Ɖ��p�ł���͂����D</p>
-					<p>��莞�Ԃ̌o�߂�҂��߂ɂ� yield ���� sleep method�̂ق��������Ă���Dsleep ���Ăяo����Thread�͑����Ɉ�莞�Ԃ̋x����Ԃɓ���D����͖ڊo�܂����v��ݒ肵�ĐQ��̂Ǝ��Ă���D�x�����Ԃ�mili�b�P�ʂŎw�肷��: </p>
-					<pre>Concurrent.Thread.sleep(10000);
-</pre>
-					<p>���̗�ł́C10�b��ɖڊo�܂�����Ƃ����킯���D�����Ď��̂Ƃ���Cyield �͎��Ɠ����Ӗ��������肷��D</p>
-					<pre>Concurrent.Thread.sleep(0);
-</pre>
-					<p>����͖���ɓ���������ɖڊo�܂�����Ƃ������Ƃ��D�v����� yield �Ƃ́C��u�����������Q���邼�C�Ƃ����Ă���悤�Ȃ��̂��D�����Ĉ�u�̌������āC����Thread�͂��̎��s����D�����Ƃ��ł���D</p>
-					<p>�����Ă���Thread���C�ڊo�܂����Ȃ�O�ɂ������N���������Ȃ鎞�����邾�낤�C����ȂƂ��ɂ� notify method�����ɗ��Dnotify method�͑���Thread�̏�ɗ�O�𔭐�������method�ŁC�Ώۂ�Thread�������Ă����ꍇ�͑����ɂ��̎��s���ĊJ�����D</p>
-					<pre>th.notify("morning!");
-</pre>
-					<p>�����ł̕ϐ� th �ɂ�Thread Object�������Ă���ƍl���ė~�����DThread Object�ɂ��Ă͎��߂Ő������邪�Ccreate method�̖߂�l�ł���Ƃ��������Ă������D</p>
-					<p>���ɂ͑��̒N�����N�����Ă����܂ł����Ɩ����Ă������Ȃ�Ƃ������邾�낤�D����ȂƂ��́Csleep �̑���� stop method��p����΂悢�Dstop �� sleep �Ɠ����悤�ɁC�Ăяo�����u�Ԃɖ���ɓ���̂����C������͖ڊo�܂���ݒ肹���ɐQ��D�����Ď�������N����悤�Ȃ��Ƃ͂Ȃ�(�Ȃ�Ď����Ȗ�Y��)!������Cstop ���g���Ƃ��̊�{�I�Ȍ`�͎��̒ʂ�ł���D</p>
-					<pre>try {
-    Concurrent.Thread.stop();
-} catch(e){
-    // ����������s���ĊJ�����
-}
-</pre>
-					<p>���Ƃ͒N�����N�����Ă����̂������Ƒ҂����ł���D���̂܂ܒN�ɂ��N������Ȃ�������ǂ��Ȃ邩����? ���̂Ƃ��͂��̂܂܂��₩�Ɏ��Ɍ������������D(memory leak�̐S�z�����Ă��邠�Ȃ��ɘN������͂����悤�Dstop �����܂ܖY�ꋎ��ꂽThread���Q�Ƃ��Ă���memory�́C�����n�̂��݉���҂ɂ���ēK�X��������͂����D��������S���Ăق���)</p>
-					<h2><a name="p3">Thread�������@</a></h2>
-					<p>Thread�������@�� 2 ����D1 �͍ŏ��̗�ł��g���Ă��� create method�Ɋ֐���n�����Ƃ��Dcreate method�͐V����Thread���쐬���C���̏�œn���ꂽ�֐��̎��s���J�n����D�֐��Ɉ�����n��������΁C���s�������֐��ɑ����ď����΂悢:</p>
+	while(!document.body)Concurrent.Thread.yield();
+	initialize()
+})</pre>
+					<p>こうすると，HTMLのbody要素を必要とするような初期化処理を，body要素が使えるようになるその時まで遅らせることができる。特筆すべきなのは，body要素が使えるようになるのは，一般的には，onload event handlerが呼ばれるよりもずっと早い段階だということだ。だからapplicationによっては，onloadを用いるよりも早い段階で利用者が機能を使えるようにできる。この方法は，whileの条件式を変えれば他にももっと応用できるはずだ。</p>
+					<p>一定時間の経過を待つためにはyieldよりもsleep methodの方が向いている。sleepを呼び出したThreadは即座に一定時間の休眠状態に入る。これは目覚まし時計を設定して寝るのと似ている。休眠時間はmili秒単位で指定する:</p>
+					<pre>Concurrent.Thread.sleep(10000)</pre>
+					<p>この例では，10秒後に目覚ましが鳴るというわけだ。そして実のところ，yieldは次と同じ意味だったりする。</p>
+					<pre>Concurrent.Thread.sleep(0)</pre>
+					<p>これは眠りに入った直後に目覚ましが鳴るということだ。要するにyieldとは，一瞬だけうたた寝するぞ，といっているようなものだ。そして一瞬の隙をついて，他のThreadはその実行権を奪うことができる。</p>
+					<p>眠っているThreadを，目覚ましがなる前に叩き起こしたくなる時があるだろう，そんな時にはnotify methodが役に立つ。notify methodは他のThreadの上に例外を発生させるmethodで，対象のThreadが眠っていた場合は即座にその実行が再開される。</p>
+					<pre>th.notify("morning!")</pre>
+					<p>ここでの変数thにはThread Objectが入っていると考えて欲しい。Thread Objectについては次節で説明するが，create methodの戻り値であるとだけ言っておこう。</p>
+					<p>時には他の誰かが起こしてくれるまでずっと眠っていたくなる時もあるだろう。そんな時は，sleepの代わりにstop methodを用いればよい。stopはsleepと同じように，呼び出した瞬間に眠りに入るのだが，こちらは目覚ましを設定せずに寝る。そして自分から起きるようなことはない(なんて自堕落な野郎だ)! だから，stopを使う時の基本的な形は次の通りである。</p>
+					<pre>try{
+	Concurrent.Thread.stop()
+}catch(e){
+// ここから実行が再開される
+}</pre>
+					<p>後は誰かが起こしてくれるのをじっと待つだけである。そのまま誰にも起こされなかったらどうなるかって? その時はそのまま緩やかに死に向かうだけだ。memory leakの心配をしているあなたに朗報をお届けしよう。stopしたまま忘れ去られたThreadが参照しているmemoryは，処理系のごみ回収者によって適宜回収されるはずだ。だから安心して欲しい</p>
+					<h2><a name="p3">Threadを作る方法</a></h2>
+					<p>Threadを作る方法は2つある。1つは最初の例でも使われていたcreate methodに関数を渡すことだ。create methodは新しいThreadを作成し，その上で渡された関数の実行を開始する。関数に引数を渡したければ，実行したい関数に続けて書けばよい:</p>
 					<pre>Concurrent.Thread.create(function fib(n){
-    return n &lt; 2 ? 1
-                 : fib(n-1)+fib(n-2);
-},100);
-</pre>
-					<p>����1�̕��@�́C�֐� Object�ɒǉ�����Ă��� async method��p���邱�Ƃ�:</p>
-					<pre>f.async(this_val,args)
-</pre>
-					<p>�������C���̏ꍇ�� f �́Ccompile method�̖߂�l�Ƃ��ē���ꂽ�֐��łȂ���΂Ȃ�Ȃ��Dcompile method�ɂ��ẮC���߂Ő�������D</p>
-					<p>async method�̗D�ꂽ�_�́C�Ăяo������ł� this �l���w��ł��邱�Ƃł���D���̈Ӗ��ł���́CJavaScript �g�ݍ��݂� apply method�Ǝ��Ă���D���̂��߁C�n���ׂ��������������Cthis �l�ƈ������܂Ƃ߂��z��Ȃ̂ł���D</p>
-					<p>create �� async ���C���̖߂�l�Ƃ���Thread Object��Ԃ��DThread Object��p���邱�ƂŁC�V�������ꂽThread�ɑ΂��đ�������邱�Ƃ��ł���D���Ƃ��΁C��ł����� notify method�͂��̗�ł���DThread Object�� method���đ��ɂ́Cjoin ������D����͑Ώ�Thread�̎��s���I������܂ő҂Ƃ������̂ł���D���Ƃ��Ύ��̗�C</p>
-					<pre>var th1 = Concurrent.Thread.create(f);
-var th2 = Concurrent.Thread.create(g);
-var rv1 = th1.join();
-var rv2 = th2.join();
-</pre>
-					<p>����� f �� g 2�̊֐�����s�Ɏ��s���C�����̎��s���I������̂�҂Ƃ������̂��Djoin �̖߂�l�͎��s�����֐��̖߂�l�ŁC���̏ꍇ�͕ϐ� rv1�Crv2 �ɂ��ꂼ��֐�f�Cg �̌��ʂ�������Ƃ����킯���D</p>
-					<p>join �ɂ���đҋ@��Ԃɂ���Ƃ����Csleep �� stop �Ɠ��l�ɁC����Thread���� notify���Ă΂�邱�Ƃő����Ɏ��s���ĊJ���邱�Ƃ��ł���D������񂻂̎��ɂ́C��O���⑫���ꂽ catch �߂�����s���ĊJ�����D</p>
-					<h2><a name="p4">�ǂ�����Ă��?</a></h2>
-					<p>�����ł� Concurrent.Thread ���C�ǂ�����đ��dThread���������Ă��邩�ɂ��Ă��b�������Ǝv���D���łɋ����ÁX�̐l�����������邾�낤(�Ɗ肢����)����ŁC��������ɋ����͂Ȃ��Ƃ����l�����������邾�낤�D�������C�����̂Ȃ��l�� 1 �����o���Ă����ė~�����D����́CConcurrent.Thread ��code�ϊ��𗘗p���Ă���Ƃ������Ƃ��D�܂�C���Ȃ�����Thread�Ŏ��s���悤�Ƃ��� create method�ɓn�����֐��ƁC���ۂɎ��s�����֐��͑S���̕ʕ��Ȃ̂��D�����C���́u�ʕ��֐��v��(�T��)���Ȃ��̊��Ғʂ�ɓ����Ă����͂����D���ꂳ���S�ɗ��߂Ă����Ă����΁C���̐߂̎c��̕����͓ǂݔ�΂��Ă�����č\��Ȃ��D</p>
-					<p>��������ɋ����������Ă��ꂽ�l�����̂��߂ɁC���������������������Ă��炨���DConcurrent.Thread �� create method�ɓn���ꂽ�֐����CUI Thread�����܂߂ɉ������悤��program�ւƏ������������̂�����C��������s����D���������̑�܂��ȑz���Ƃ��ẮCprogram���u�א؂�v�ɂ��Ă��́u�؂�ځv�ɒ��f�ƍĊJ�̂��߂�code�����ݍ��ފ������DJavaScript �͊֐��� toString method��p���邱�ƂŁC���s���Ɋ֐��̎Z���𓾂邱�Ƃ��ł���̂ŁC�����p����program��ϊ����C�ϊ����ʂ�program(�Z��)�� eval �ŕ]�����Ă�邱�ƂŁC�܂�܂Ǝ��s����code�ϊ����ł��Ă��܂��Ƃ����킯�ł���D�ڂ������Ƃ͓������͈̔͂���E���邽�ߊ��������Ă��炤���C���ڂ����m�肽���l�́C�{�������̖�������Q�Ƃ���Ă��镶�����Q�Ƃ��ꂽ���D</p>
-					<p>�ϊ��ƈꌾ�ł����Ă��Cprogram���\����͂��C�\���؂𑀍삵����ŁC�܂� JavaScript��g�݂Ȃ����Ƃ����悤�Ȃ��Ƃ��s���킯�ŁC����͌����Čy�������ł͂Ȃ��D����Ȃ��Ƃ� create method���ĂԂ��тɍs���Ă��ẮC������ CPU �������Ă�����Ȃ��D���̂��߁C�܂��ɂ��̕ϊ��������s�����߂� compile method���p�ӂ���Ă���Dcompile ��code�ϊ����s���C���̌��ʂƂ��Ċ֐���Ԃ��D�ϊ����ʂ̊֐��ɂ͑O�߂ŏЉ�� async method���Ăяo�����Ƃ��ł��C����ɂ���ĐV����Thread����邱�Ƃ��ł���D�܂��C�ϊ����ʂ�����܂Œʂ� create method�ɓn�����Ƃł��������Ƃ��ł���D�������C���̏ꍇ�ɂ��ēx�ϊ����s���邱�Ƃ͂Ȃ��D�]���āC���̂悤�� create method�̌Ăяo���́C</p>
+	return n&lt;2?1:fib(n-1)+fib(n-2)
+},100)</pre>
+					<p>もう1つの方法は，関数Objectに追加されているasync methodを用いることだ:</p>
+					<pre>f.async(this_val,args)</pre>
+					<p>ただし，この場合のfは，compile methodの戻り値として得られた関数でなければならない。compile methodについては，次節で説明する。</p>
+					<p>async methodの優れた点は，呼び出した先でのthis値を指定できることである。その意味でこれは，JavaScript組み込みのapply methodと似ている。そのため，渡すべき引数も同じく，this値と引数をまとめた配列なのである。</p>
+					<p>createもasyncも，その戻り値としてThread Objectを返す。Thread Objectを用いることで，新しく作られたThreadに対して操作をすることができる。例えば，上であげたnotify methodはその例である。Thread Objectのmethodして他には，joinがある。これは対象Threadの実行が終了するまで待つというものである。例えば次，</p>
+					<pre>var th1=Concurrent.Thread.create(f);
+var th2=Concurrent.Thread.create(g);
+var rv1=th1.join();
+var rv2=th2.join();</pre>
+					<p>これはfとg、2つの関数を並行に実行し，両方の実行が終了するのを待つというものだ。joinの戻り値は実行した関数の戻り値で，この場合は変数rv1，rv2にそれぞれ関数f，gの結果が得られるというわけだ。</p>
+					<p>joinによって待機状態にある時も，sleepやstopと同様に，他のThreadから notifyを呼ばれることで即座に実行を再開することができる。もちろんその時には，例外が補足されたcatch節から実行が再開される。</p>
+					<h2><a name="p4">どうやってるの?</a></h2>
+					<p>ここではConcurrent.Threadが，どうやって多重Threadを実現しているかについてお話したいと思う。既に興味津々の人もいらっしゃるだろう(と願いたい)一方で，内部事情に興味はないという人もいらっしゃるだろう。しかし，興味のない人も1つだけ覚えておいて欲しい。それは，Concurrent.Threadがcode変換を利用しているということだ。つまり，あなたが別Threadで実行しようとしてcreate methodに渡した関数と，実際に実行される関数は全くの別物なのだ。ただ，その「別物関数」は(概ね)あなたの期待通りに動いてくれるはずだ。これさえ心に留めておいてくれれば，この節の残りの部分は読み飛ばしてもらって構わない。</p>
+					<p>内部事情に興味を持ってくれた人たちのために，もう少しだけ説明させてもらおう。Concurrent.Threadはcreate methodに渡された関数を，UI Threadをこまめに解放するようなprogramへと書き換えたものを作り，それを実行する。書き換えの大まかな想像としては，programを「細切れ」にしてその「切れ目」に中断と再開のためのcodeを挟み込む感じだ。JavaScriptは関数のtoString methodを用いることで，実行時に関数の算譜を得ることができるので，これを用いてprogramを変換し，変換結果のprogram(算譜)をevalで評価してやることで，まんまと実行時にcode変換ができてしまうというわけである。詳しいことは導入部の範囲を逸脱するため割愛させてもらうが，より詳しく知りたい人は，本導入部の末尾から参照されている文書を参照されたい。</p>
+					<p>変換と一言でいっても，programを構文解析し，構文木を操作した上で，またJavaScriptを組み直すというようなことを行うわけで，これは決して軽い処理ではない。こんなことをcreate methodを呼ぶたびに行っていては，いくらCPUがあっても足りない。そのため，まさにこの変換だけを行うためにcompile methodが用意されている。compileはcode変換を行い，その結果として関数を返す。変換結果の関数には前節で紹介したasync methodを呼び出すことができ，これによって新しいThreadを作ることができる。また，変換結果をこれまで通りcreate methodに渡すことでも同じことができる。もちろん，この場合にも再度変換が行われることはない。従って，次のようなcreate methodの呼び出しは，</p>
 					<pre>Concurrent.Thread.create(f,a1,a2,...)
 </pre>
-					<p>���� compile �� async ���g����code�̏ȗ��`�ł���D</p>
+					<p>下のcompileとasyncを使ったcodeの省略形である。</p>
 					<pre>Concurrent.Thread.compile(f).async(null,[a1,a2,...])
 </pre>
-					<h2><a name="p5">scope �\ ���������Ă܂���?</a></h2>
-					<p>�O�߂ŁCcreate method�ɓn�����֐��Ǝ��ۂɎ��s�����֐��͑S���̕ʕ����Ə��������C���ꂪ�傢�ɖ��ɂȂ�ꍇ������DConcurrent.Thread �͖{���̊֐��̈Ӗ����Ȃ�ׂ��ς��Ȃ��悤���Ӑ[��code�ϊ����s�����C���R�ϐ������͂ǂ��ɂ��Ȃ�Ȃ��̂��D���̗�����Ă݂悤�D</p>
+					<h2><a name="p5">scope ― 何が見えてますか?</a></h2>
+					<p>前節で，create methodに渡した関数と実際に実行される関数は全くの別物だと書いたが，これが大いに問題になる場合がある。Concurrent.Threadは本来の関数の意味をなるべく変えないよう注意深くcode変換を行うが，自由変数だけはどうにもならないのだ。次の例を見てみよう。</p>
 					<pre>function f(x,y){
 	Concurrent.Thread.create(function(){
-	    document.write(x+y)
+		document.write(x+y)
 	})
 }</pre>
-					<p>����� f(1,2) �ƌĂяo���ƁC3 ���\������Ăق����Ǝv�����낤���C���ۂɂ͂����͂Ȃ�Ȃ��D����ɂ͕ϊ����ꂽ�֐����]�������ꏊ���֌W���Ă���Dcompile method�͕ϊ����ʂ̊֐����ŏ�ʂɋ߂����� eval �̕]���ɂ�����D������C�ϊ��O�Ɏ��R�ϐ��ł��������͕̂ϊ���̊֐��ł͊T�ˑ��ϐ����w�����ƂɂȂ��Ă��܂��D�܂�C��̗�͂�����������code�Ɠ����ł���D</p>
+					<p>これを f(1,2) と呼び出すと，3が表示されて欲しいと思うだろうが，実際にはそうはならない。これには変換された関数が評価される場所が関係している。compile methodは変換結果の関数を最上位に近い所でevalの評価にかける。だから，変換前に自由変数であったものは変換後の関数では概ね大域変数を指すことになってしまう。つまり，上の例は大体次のcodeと同じである。</p>
 					<pre>function g(){
-    document.write(x+y)
+	document.write(x+y)
 }
 function f(x,y){
-    Concurrent.Thread.create(g)
+	Concurrent.Thread.create(g)
 }
 </pre>
-					<p>����ł͂��܂�ɂ��s�ւȂ̂ŁC������񓦂�����p�ӂ��Ă���D����� prepare method�𗘗p���邱�Ƃł���D</p>
-					<p>prepare method�͈����ɓn���ꂽ�֐���code�ϊ����s���C���̌��ʂ�program�̎Z��(������)��Ԃ��D�Ƃ������Ƃ͂܂�Ccompile method�͎���code�̏ȗ��`�Ȃ̂ł���D</p>
+					<p>これではあまりにも不便なので，もちろん逃げ道を用意してある。それはprepare methodを利用することである。</p>
+					<p>prepare methodは引数に渡された関数のcode変換を行い，その結果のprogramの算譜(文字列)を返す。ということはつまり，compile methodは次のcodeの省略形なのである。</p>
 					<pre>eval(Concurrent.Thread.prepare(f))
 </pre>
-					<p>�����������Œ��� eval ���Ă񂾏ꍇ�ɂ́C�ϊ���̊֐��̒��ł������ł�local�ϐ��ɐڐG�ł���Ƃ����_���傫���قȂ�D����Ă����قǂ̗�́C���̂悤�ɏC�����邱�ƂňӐ}�����ʂ�ɓ����悤�ɂȂ�D</p>
+					<p>しかし自分で直接evalを呼んだ場合には，変換後の関数の中でもそこでのlocal変数に接触できるという点が大きく異なる。よって先ほどの例は，次のように修正することで意図した通りに動くようになる。</p>
 					<pre>function f(x,y){
-    eval(Concurrent.Thread.prepare(function(){
-        document.write(x+y)
-    })).async()
-}
-</pre>
-					<p>���傢�ƌ����ڂ͈������C�����͂ǂ������e�͊肢�����D</p>
-					<h2><a name="p6">������Ƃ����C�ő�̔閧</a></h2>
-					<p>������1�C�F����ɍ������Ă����Ȃ���΂Ȃ�Ȃ����Ƃ�����D���͂����܂łŁCcompile method��code�ϊ����s�����̌��ʂ̊֐���Ԃ��C�Ƃ��񂴂񏑂��Ă����D���̂��Ǝ��̂́C���Ȃ������ł͂Ȃ��D�ł͂��̌��ʂ����������ׂ��C�Ԃ��ꂽ�֐��𕶎��񉻂��Ă݂悤���Ⴀ��܂��񂩁D</p>
-					<pre>document.write(Concurrent.Thread.compile(function(){
-    document.write("Hello,world")
-}));
-</pre>
-					<p>�E�E�E�E�E�E�͂��C�����ς���Ă��Ȃ����̂܂܂̊֐����\������܂�����?�����ς���ĂȂ��񂶂�b���Ⴄ?�ϊ����ʂ͂ǂ��ւ��������?���������āC���������āD�����͎���code�����s���Ă݂�΂킩��܂��D</p>
-					<pre>var f = Concurrent.Thread.compile(function(){
-    document.write("Hello,world")
-});
-document.write(f.$Concurrent_Thread_compiled)
-</pre>
-					<p>�������킩��ł����?�ϊ����ʂ́u$Concurrent_Thread_compiled�v�Ƃ������̉B��property�ɂЂ�����Ɖ������߂��Ă���̂ł��D�߂�l�̊֐������̂܂܂ɂȂ��Ă���̂́C�������Ă������Ƃ�code�ϊ�����Ă��Ȃ��֐��ł����ʂɌĂяo������悤�ɂ��Ă������߂��D�������C�������ČĂяo���ꂽ�ꍇ�ɂ͑���Thread�ƕ��s�ɓ��삷�邱�Ƃ͂ł��Ȃ��D</p>
-					<p>���̂Ƃ���CConcurrent.Thread ���m���Ă���̂́C�֐��ɕt����ꂽ���̉B��property�̎g���������Ȃ̂��Dcode�ϊ����ꂽ�֐��́C���̊֐����ĂԂƂ��ɂ���property���g���ČĂԂ悤�ɕϊ�����邵�Casync method��������g���Ă���D���āC���̔閧��m���Ă��܂�������ɂ́C���Ȃ��͂������� Concurrent.Thread �́u����ʁv�ɂȂ��Ă���͂����D����Ƃ����́u����ʂ��Ղ�v�����������Ă�C���̐l�ɂ��L�߂Ē��������D</p>
-					<h2><a name="p7">�����Ɛ��</a></h2>
-					<p>���̓������͂����܂ł����C���ڂ����m�肽���Ƃ����l�̂��߂ɁC�킸���������̕������Љ�Ă������D</p>
-					<p>�܂��� Concurrent.Thread �� <a href="api.htm" class="wikipage">API �d�l</a>�D����ɂ́C�����ł͏q�ׂ��Ȃ��������Ƃ����������ڂ��Ă���D�ƂĂ��Z�������ŁC�璷�ł��镪�������Ă��C���Ԃ񂱂̓������̂ق������ʂ������Ǝv���D������ Concurrent.Thread �̂��ׂĂ̋@�\��c�����邽�߂ɂ͕K�ǂ̏��ł���D</p>
-					<p>����1�� <a href="thesis-jp.pdf">�_���w�񓯊������̂��߂� JavaScript ���dthread framework�x</a>(3910)�D������ł� Concurrent.Thread �̎�����@�ɂ��ďڍׂɏq�ׂ��Ă���D���e�I�ɂ͂����炩�Â��Ȃ��Ă��镔�������邪�C��{�I�ȕ����͂����ɏ�����Ă��邱�Ƃ���ς���Ă͂��Ȃ��D������͎������@�ɋ����̂���l��Ccode�ϊ�����g�킸�Ɏ����Ŏ蓮�����������Ă݂����Ƃ��������Ȑl�ȂǂɃI�X�X���ł���D</p>
-				</div>
-			</div>
-		</div>
-	</div>
+	eval(Concurrent.Thread.prepare(function(){
+		document.write(x+y)
+	})).async()
+}</pre>
